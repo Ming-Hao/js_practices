@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html>
+	<body  style="background-repeat:no-repeat">
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+			var canvas = document.getElementById("myCanvas");
+			
+			var ctx = canvas.getContext("2d");
+			
+			var stage = 1;
+			var score = 0;
+			
+			
+			var time = 0;
+			var movestep  = 20;
+			var moveX = 1;
+			var moveY = 0;
+
+			var paddleHeight = 15;
+			var paddleWidth  = 15;
+			//var paddleX 	 = (canvas.width-paddleWidth)/2;
+			
+			
+			var rightPressed = false;
+			var leftPressed  = true;
+			var upPressed    = false;
+			var downPressed  = false;
+			
+			var Snake = [];
+			var Head = { 
+						 x: 0,
+						 y: 0
+					   }
+			Head.x = 100;
+			Head.y = 40;
+			Snake.push(Head);
+			SnakeConcatenate();
+			SnakeConcatenate();
+			var TargetEat = { 
+							 x:400,
+							 y:400
+							}
+			
+			window.addEventListener("keydown", keyDownHandler, false);
+			//window.addEventListener("onkeyup", keyUpHandler, false);
+			//document.addEventListener("mousemove", mouseMoveHandler, false);
+
+			/*
+			document.onkeydown = function(e) 
+			{
+				switch (e.keyCode) 
+				{
+					case 37:
+						if(rightPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = true;
+						upPressed 	 = false;
+						downPressed  = false;
+						break;
+					case 38:
+						if(downPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = false;
+						upPressed 	 = true;
+						downPressed  = false;
+						break;
+					case 39:
+						if(leftPressed)
+							return;
+						rightPressed = true;
+						leftPressed  = false;
+						upPressed 	 = false;
+						downPressed  = false;
+						break;
+					case 40:
+						if(upPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = false;
+						upPressed 	 = false;
+						downPressed  = true;
+						break;
+				}
+			};
+			*/
+			
+			function keyDownHandler(e)
+			{
+				switch (e.keyCode) 
+				{
+					case 37:
+						if(rightPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = true;
+						upPressed 	 = false;
+						downPressed  = false;
+						break;
+					case 38:
+						if(downPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = false;
+						upPressed 	 = true;
+						downPressed  = false;
+						break;
+					case 39:
+						if(leftPressed)
+							return;
+						rightPressed = true;
+						leftPressed  = false;
+						upPressed 	 = false;
+						downPressed  = false;
+						break;
+					case 40:
+						if(upPressed)
+							return;
+						rightPressed = false;
+						leftPressed  = false;
+						upPressed 	 = false;
+						downPressed  = true;
+						break;
+				}
+			}
+			/*
+			function keyUpHandler(e)
+			{
+				
+			}
+			
+			function mouseMoveHandler(e) //¤£¥Î·Æ¹«
+			{
+				var relativeX = e.clientX - canvas.offsetLeft;
+				if(relativeX > 0 && relativeX < canvas.width) {
+					paddleX = relativeX - paddleWidth/2;
+				}
+			}
+			*/
+			
+			
+			function SnakeSelfCollision()
+			{
+				var IsCollision = false;
+				for(i = 1; i < Snake.length; i++)
+				{
+					if(Snake[i].x == Snake[0].x && Snake[i].y == Snake[0].y)
+					{
+						IsCollision = true;
+						break;
+					}
+					
+				}
+				if(IsCollision)
+				{
+					alert("Collision!!!");
+					Snake.length = 3;
+					Score = 0;
+					return;
+				}
+			}
+
+			
+			
+			
+
+			
+			
+			function SnakeConcatenate()
+			{
+				var Snakebody = { 
+								  x:0,
+								  y:0
+								}
+							
+				Snakebody.x = Snake[Snake.length - 1].x;
+				Snakebody.y = Snake[Snake.length - 1].y;
+				Snake.push(Snakebody);
+			}
+			
+
+			function SnakeMove()
+			{
+	            for(i = Snake.length-1; i >= 1; i--)
+				{
+					Snake[i].x = Snake[i-1].x ;
+					Snake[i].y = Snake[i-1].y ;
+				}	
+			
+				if(rightPressed)
+				{	
+					moveX = 1;
+					moveY = 0;
+				}
+				else if(leftPressed)
+				{	
+					moveX = -1;
+					moveY =  0;
+				}
+				else if(upPressed)
+				{	
+					moveX =  0;
+					moveY = -1;
+				}
+				else if(downPressed)
+				{	
+					moveX = 0;
+					moveY = 1;	
+				}				
+				Snake[0].x += movestep*moveX;
+				Snake[0].y += movestep*moveY;
+				if(Snake[0].x >= canvas.width)
+						Snake[0].x = 0;
+				else if(Snake[0].x <= 0)
+						Snake[0].x = canvas.width - 40;
+				else if(Snake[0].y <= 0)
+						Snake[0].y = canvas.height - 40;
+				else if(Snake[0].y >= canvas.height)
+						Snake[0].y = 20;		
+			}
+			
+			
+			function drawSnake()
+			{
+				for(i = Snake.length-1; i >= 0; i--)
+				{
+					ctx.beginPath();		
+					ctx.rect(Snake[i].x, Snake[i].y, paddleWidth, paddleHeight);
+					/*¶ê*/
+					//ctx.arc(tmpbullet.x, tmpbullet.y, 2, 0, Math.PI*2);
+					if(i != 0)
+						ctx.fillStyle = "#000000";
+					else
+						ctx.fillStyle = "#ff0000";
+					ctx.fill();
+					ctx.closePath();
+				}
+			}
+			
+
+			
+			function Target()
+			{
+				TargetEat.x = Math.floor(Math.random()* 70) * Math.floor(Math.random()* 5 + 1) + 20;
+				TargetEat.y = Math.floor(Math.random()* 70) * Math.floor(Math.random()* 5 + 1) + 20;
+			}
+			
+			function drawTarget()
+			{
+				ctx.beginPath();		
+				ctx.rect(TargetEat.x, TargetEat.y, paddleWidth, paddleHeight);
+				ctx.fillStyle = "#00ff00";
+				ctx.fill();
+				ctx.closePath();
+			}
+			
+			
+			function CheckEat()
+			{
+				if( Math.abs(Snake[0].x - TargetEat.x) < 15 &&
+					Math.abs(Snake[0].y - TargetEat.y) < 15 )
+				{
+					Target();
+					SnakeConcatenate();
+					score++;
+				}
+			}
+			
+
+			function draw_text_Score() 
+			{
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Score: "+score, 8, 15);
+			}
+
+			function draw_text_stages() 
+			{
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Stage: "+stage, canvas.width-65, 15);
+			}
+			
+			function timeIncreament()
+			{
+				time++;
+				if(time >= 999)
+					time = 0;
+			}
+			
+			function InitialStage()
+			{
+				score = 0;
+			}
+			
+			function DRAWALL()
+			{
+				drawSnake();
+				drawTarget();
+				draw_text_Score();
+				draw_text_stages();
+			}
+			
+			
+			
+			function draw() 
+			{
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				if(time % 4 == 0)
+				{
+					SnakeMove();
+					CheckEat();
+					SnakeSelfCollision();
+				}
+				
+				
+				DRAWALL();
+				
+				timeIncreament();
+				
+				requestAnimationFrame(draw);
+			}
+			draw();
+		</script>
+		<style>
+		div.fixed {
+			position: fixed;
+			top: 600px;
+			left: 20px;
+			width: 400px;
+			color: Black;
+			font-size: 20px;
+			//border: 1px solid #73AD21;
+		}
+		</style>
+		<div class="fixed">
+		Pressed "up", "down", "left", "right" to move</br>
+		
+		</div>
+		
+	</body>
+</html>

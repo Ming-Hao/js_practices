@@ -1,0 +1,194 @@
+<html>
+
+<body>
+    <p>
+        Column num :
+        <input type="text" id="col_num" value="30" onkeyup="value=value.replace(/[^\d]/g,'') "> Row num :
+        <input type="text" id="row_num" value="30" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <button onclick="draw()"> create </button>
+    </p>
+
+    <canvas id="myCanvas" width="1000" height="1000"></canvas>
+    <script>
+        var canvas = document.getElementById("myCanvas");
+
+        var ctx = canvas.getContext("2d");
+        var x = canvas.width / 2;
+        var y = canvas.height - 30;
+
+        var paddleHeight = 10;
+        var paddleWidth = 150;
+        var paddleX = (canvas.width - paddleWidth) / 2;
+        var rightPressed = false;
+        var leftPressed = false;
+
+        var linewidth = 5;
+        var brickRowCount = 30;
+        var brickColumnCount = 30;
+        var brickWidth = 20;
+        var brickHeight = 30;
+        var brickOffsetTop = 20;
+        var brickOffsetLeft = linewidth;
+
+
+        var bricks = [];
+
+
+        document.addEventListener("keydown", keyDownHandler, false);
+        document.addEventListener("keyup", keyUpHandler, false);
+        document.addEventListener("mousemove", mouseMoveHandler, false);
+
+        function keyDownHandler(e) {
+            if (e.keyCode == 39) {
+                rightPressed = true;
+            }
+            else if (e.keyCode == 37) {
+                leftPressed = true;
+            }
+        }
+        function keyUpHandler(e) {
+            if (e.keyCode == 39) {
+                rightPressed = false;
+            }
+            else if (e.keyCode == 37) {
+                leftPressed = false;
+            }
+        }
+        function mouseMoveHandler(e) {
+            var relativeX = e.clientX - canvas.offsetLeft;
+            if (relativeX > 0 && relativeX < canvas.width) {
+                paddleX = relativeX - paddleWidth / 2;
+            }
+        }
+
+
+        function drawBricks() {
+            for (row = 0; row < brickRowCount; row++) {
+                for (col = 0; col < brickColumnCount; col++) {
+                    if (bricks[row][col].status == 1) {
+                        var brickX = (col * (brickWidth)) + brickOffsetLeft;
+                        var brickY = (row * (brickHeight)) + brickOffsetTop;
+                        var brickX2 = (col * (brickWidth)) + brickOffsetLeft + brickWidth;
+                        var brickY2 = (row * (brickHeight)) + brickOffsetTop;
+                        bricks[row][col].x = brickX;
+                        bricks[row][col].y = brickY;
+                        if (bricks[row][col].up == 1) {
+                            ctx.beginPath();
+                            ctx.rect(brickX, brickY, brickWidth, linewidth);
+                            ctx.fillStyle = "#FF00DD";
+                            ctx.fill();
+                            ctx.closePath();
+                        }
+                        if (bricks[row][col].right == 1) {
+                            ctx.beginPath();
+                            ctx.rect(brickX2, brickY2, linewidth, brickHeight + linewidth);
+                            ctx.fillStyle = "#FF00DD";
+                            ctx.fill();
+                            ctx.closePath();
+                        }
+
+                    }
+                }
+            }
+
+            ctx.beginPath();
+            ctx.rect(0, brickOffsetTop, linewidth, (brickRowCount - 1) * brickHeight + linewidth);
+            ctx.fillStyle = "#FF00DD";
+            ctx.fill();
+            ctx.closePath();
+
+
+            ctx.beginPath();
+            ctx.rect(0, brickOffsetTop + (brickRowCount) * brickHeight + linewidth, brickOffsetLeft + (brickColumnCount) * brickWidth + linewidth, linewidth);
+            ctx.fillStyle = "#FF00DD";
+            ctx.fill();
+            ctx.closePath();
+
+        }
+
+        function generate() {
+            var sum = 1;
+            while (sum < brickRowCount * brickColumnCount) {
+                var col = Math.floor(Math.random() * brickColumnCount);
+                var row = Math.floor(Math.random() * brickRowCount);
+                if (IsVisited(row, col))
+                    continue;
+                if (col < brickColumnCount - 1 && row == 0) {
+
+                    bricks[row][col].right = 0;
+                    sum++;
+                }
+                else if (col == brickColumnCount - 1) {
+                    bricks[row][col].up = 0;
+                    sum++;
+                }
+                else {
+                    var choose = Math.floor(Math.random() * 191) % 2;
+                    if (choose % 2 == 0)
+                        bricks[row][col].up = 0;
+                    else
+                        bricks[row][col].right = 0;
+                    sum++;
+                }
+
+
+            }
+        }
+        function IsVisited(row, col) {
+            return !((bricks[row][col].up > 0) && (bricks[row][col].right > 0));
+        }
+
+        function draw() {
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            var rownum = document.getElementById("row_num");
+            brickRowCount = rownum.value;
+            var colnum = document.getElementById("col_num");
+            brickColumnCount = colnum.value;
+
+            if (brickColumnCount < 2) {
+                alert("Column Num at least 2")
+                return;
+            }
+            if (brickRowCount < 2) {
+                alert("Row Num at least 2")
+                return;
+            }
+
+            canvas.width = brickColumnCount * brickWidth + 100;
+            canvas.height = brickRowCount * brickHeight + 100;
+
+
+            Initialbricks();
+            generate();
+            drawBricks();
+
+            //requestAnimationFrame(draw);
+        }
+
+        function Initialbricks() {
+            bricks = [];
+            for (row = 0; row < brickRowCount; row++) {
+                bricks[row] = [];
+                for (col = 0; col < brickColumnCount; col++) {
+                    bricks[row][col] =
+                        {
+                            x: 0,
+                            y: 0,
+                            status: 1,
+                            right: 1,
+                            up: 1
+                        };
+                }
+            }
+            bricks[0][brickColumnCount - 1].up = 0;
+        }
+
+    </script>
+
+</body>
+
+</html>

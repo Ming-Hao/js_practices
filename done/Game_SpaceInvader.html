@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html>
+	<body background = "img/cosmology.JPG" style="background-repeat:no-repeat">
+		<canvas id="myCanvas" width="500" height="500"></canvas>
+		<script>
+			var canvas = document.getElementById("myCanvas");
+			
+			var ctx = canvas.getContext("2d");
+			var lives = 3;
+			var stage = 1;
+			var score = 0;
+			var ballRadius 	 = 10;
+			var FirstLoad = 0;
+			var time = 0;
+			
+			var x 			 = canvas.width/2;
+			var y 			 = canvas.height-30;
+			
+			var hiddenRaddom = Math.random() * 4 + 2;
+			var dx 			 = - hiddenRaddom - Math.PI;
+			var dy 			 = hiddenRaddom + Math.PI;
+			
+			var paddleHeight = 15;
+			var paddleWidth  = 35;
+			var paddleX 	 = (canvas.width-paddleWidth)/2;
+			var paddleY      = canvas.height-paddleHeight;
+			
+			var rightPressed = false;
+			var leftPressed  = false;
+			var upPressed    = false;
+			var downPressed  = false;
+			var spacePressed = false;
+			var Apressed 	 = false;
+			var Dpressed 	 = false;
+			
+			var brickRowCount 		 = 4;
+			var brickColumnCount 	 = 1;
+			var brickWidth 			 = 40;
+			var brickHeight 		 = 20;
+			var brickXPadding 		 = 80;
+			var brickYPadding 		 = 20;
+			var brickOffsetTop 		 = 40;
+			var brickOffsetLeft  	 = 30;
+			
+			var brickMaxHp 		 	 = 10;
+			var brickMovingMaxRange  = 15;
+			var bricks 			 = [];
+			
+			var bulletArray  = [];
+			var bulletAttack = [];
+			
+			
+			
+			window.addEventListener("keydown", keyDownHandler, false);
+			window.addEventListener("keyup", keyUpHandler, false);
+			//document.addEventListener("mousemove", mouseMoveHandler, false);
+
+			function keyDownHandler(e) 
+			{
+				e = e || window.event;
+				
+				switch (e.keyCode) {
+					case 37:
+						leftPressed = true;
+						break;
+					case 38:
+						upPressed = true;
+						break;
+					case 39:
+						rightPressed = true;
+						break;
+					case 40:
+						downPressed = true;
+						break;
+					
+				}
+
+				if(e.keyCode == 65)
+				{
+					Apressed = true;
+				}
+				else if(e.keyCode == 68)
+				{
+					Dpressed = true;
+				}
+				
+			}
+			function keyUpHandler(e) 
+			{
+				switch (e.keyCode) {
+					case 37:
+						leftPressed = false;
+						break;
+					case 38:
+						upPressed = false;
+						break;
+					case 39:
+						rightPressed = false;
+						break;
+					case 40:
+						downPressed = false;
+						break;
+					
+				}
+				
+				
+				/*if(e.keyCode == 32)
+				{
+					spacePressed = false;
+				}*/
+				if(e.keyCode == 65)
+				{
+					Apressed = false;
+				}
+				else if(e.keyCode == 68)
+				{
+					Dpressed = false;
+				}
+				
+				
+			}
+			function mouseMoveHandler(e) //不用滑鼠
+			{
+				var relativeX = e.clientX - canvas.offsetLeft;
+				if(relativeX > 0 && relativeX < canvas.width) {
+					paddleX = relativeX - paddleWidth/2;
+				}
+			}
+			
+			function victory()
+			{
+				if(score >= brickRowCount*brickColumnCount) 
+				{
+					alert("Next stage");
+					FirstLoad = 0;
+					brickColumnCount ++;
+					lives++;
+					//document.location.reload();
+				}
+				if(brickColumnCount >= 10)
+				{
+				    alert("Fully clear");
+					document.location.reload();
+				}
+				if(lives < 1)
+				{
+					alert("Loss");
+					document.location.reload();
+				}
+					
+			}
+			
+			function keyboardDetection()
+			{
+				if(rightPressed && paddleX < canvas.width-paddleWidth) 
+				{
+					paddleX += 7;
+				}
+				else if(leftPressed && paddleX > 0) {
+					paddleX -= 7;
+				}
+				
+				if(upPressed && paddleY > 50) 
+				{
+					paddleY -= 3;
+				}
+				else if(downPressed && paddleY <= canvas.height - paddleHeight) {
+					paddleY += 7;
+				}
+				
+				
+				if(Apressed || Dpressed)
+				{	
+					createbullet();
+				}
+			}
+			
+			function collisionDetection() 
+			{
+				for(c=0; c<brickColumnCount; c++) 
+				{
+					for(r=0; r<brickRowCount; r++) 
+					{
+						var b = bricks[c][r];
+
+						if(b.status == 1) 
+						{
+							for(i = 0; i < bulletArray.length; i++)
+							{
+								var tmpbullet = bulletArray[i];
+									
+								if( tmpbullet.status == 0 &&
+									tmpbullet.x >= b.x - 1 && tmpbullet.x <= b.x + brickWidth  + 1 && 
+									tmpbullet.y >= b.y - 1 && tmpbullet.y <= b.y + brickHeight + 1) 
+								{
+									b.hp--;
+									b.height--;
+									tmpbullet.status = 1;
+									if(b.hp == 0)
+									{
+										b.status = 0;
+									    score++;
+									}	
+								}
+								
+							}
+							
+							
+							
+							if(bricks[c][r].attackY >= paddleY && 
+							   bricks[c][r].attackY <= paddleY+paddleHeight &&
+							   bricks[c][r].attackX >= paddleX &&
+					           bricks[c][r].attackX <= (paddleX+ paddleWidth))
+							{
+								bricks[c][r].attackY = bricks[c][r].y + bricks[c][r].height;
+								lives--;
+							}
+						}
+						
+					}
+				}
+			}
+
+			function drawPaddle() 
+			{
+				ctx.beginPath();
+				ctx.rect(paddleX, paddleY, paddleWidth, paddleHeight);
+				ctx.fillStyle = "#0095DD";
+				ctx.fill();
+				ctx.closePath();
+			}
+			
+			function drawBricks()
+			{
+				for(c=0; c<brickColumnCount; c++) 
+				{
+					for(r=0; r<brickRowCount; r++)
+					{
+						if(bricks[c][r].status == 1)
+						{
+							if(bricks[c][r].dir > 0)
+								bricks[c][r].tick--;
+							
+							else if(bricks[c][r].dir <= 0)
+								bricks[c][r].tick++;
+							
+							if(bricks[c][r].tick == -bricks[c][r].range)
+								bricks[c][r].dir = -1 ;
+							else if(bricks[c][r].tick == bricks[c][r].range)
+								bricks[c][r].dir = 1;
+								
+							bricks[c][r].x += 2*bricks[c][r].dir;
+							
+							
+							
+							ctx.beginPath();
+							ctx.rect(bricks[c][r].x , bricks[c][r].y, bricks[c][r].width, bricks[c][r].height);
+							ctx.fillStyle = Getcolor(bricks[c][r].hp);
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+					
+					
+				}
+			}
+			
+			function Getcolor(num)
+			{
+				if(num < 3)
+					return "#FF0000";
+				else if(num >= 3 && num < 7)
+					return "#FF8C00";
+				else if(num >= 7 && num < 10)
+					return "#0000FF";
+				else
+					return "#008000";
+			}
+			
+			function createbullet()
+			{
+				if(time%5 != 0)
+					return;
+				
+				
+				if(Apressed == true)
+				{
+					var bullet = 
+					{
+						x: 0,
+						y: 0,
+						status: 0
+					};
+					bullet.x = paddleX + 5;
+					bullet.y = canvas.height-paddleHeight;
+					bulletArray.push(bullet);
+				}
+				if(Dpressed == true)
+				{
+					var bullet = 
+					{
+						x: 0,
+						y: 0,
+						status: 0
+					};
+					bullet.x = paddleX + paddleWidth - 5;
+					bullet.y = canvas.height-paddleHeight;
+					bulletArray.push(bullet);
+				}
+		
+			}
+			
+			function drawbullet()
+			{
+				for(i = 0; i < bulletArray.length; i++)
+				{
+					var tmpbullet = bulletArray[i];
+					
+					if(tmpbullet.status == 0 )
+					{
+						tmpbullet.y -= 15;
+						ctx.beginPath();
+						ctx.arc(tmpbullet.x, tmpbullet.y, 2, 0, Math.PI*2);
+						ctx.fillStyle = "#000000";
+						ctx.fill();
+						ctx.closePath();
+					}
+					
+				}
+				
+			}
+			
+
+			function drawattack()
+			{
+				var ballRad = 6;
+				for(c=0; c<brickColumnCount; c++) 
+				{
+					for(r=0; r<brickRowCount; r++)
+					{
+						bricks[c][r].attackY += bricks[c][r].speed;
+						
+						if(bricks[c][r].attackY >= canvas.height)
+						{	
+							bricks[c][r].attackX = bricks[c][r].x + bricks[c][r].width/2;
+							bricks[c][r].attackY = bricks[c][r].y + bricks[c][r].height;
+						}
+						if(bricks[c][r].status == 1)
+						{
+							ctx.beginPath();
+							ctx.arc(bricks[c][r].attackX , bricks[c][r].attackY, ballRad, 0,Math.PI*2);
+							ctx.fillStyle = "#000000";
+							ctx.fill();
+							ctx.closePath();
+						}
+					}
+				}
+			}
+			
+			
+			function drawScore() 
+			{
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Score: "+score, 8, 20);
+			}
+			function drawLives() 
+			{
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Lives: "+lives, canvas.width-65, 20);
+			}
+			function drawstages() 
+			{
+				ctx.font = "16px Arial";
+				ctx.fillStyle = "#0095DD";
+				ctx.fillText("Stage: "+stage, canvas.width/2, 20);
+			}
+			
+			function timeIncreament()
+			{
+				time++;
+				if(time >= 1000000)
+					time = 0;
+			}
+			
+			function InitialStage()
+			{
+				rightPressed = false;
+				leftPressed  = false;
+				spacePressed = false;
+				score = 0;
+				
+				for(c=0; c<brickColumnCount; c++) 
+				{
+					bricks[c] = [];
+					for(r=0; r<brickRowCount; r++)
+					{
+						bricks[c][r] = 
+						{ 
+							x: 0,
+							y: 0,
+							width: 0,
+							height: 0,
+							status: 1,
+							
+							range: 0,
+							tick: 12,
+							dir: 1,
+							hp: 0,
+							
+							attackX: 0,
+							attackOriginalY: 0,
+							attackY: 0,
+							speed: 0
+							
+						};
+						var brickX 		    = (r*(brickWidth+brickXPadding))+brickOffsetLeft;
+						var brickY 	     	= (c*(brickHeight+brickYPadding))+brickOffsetTop;
+						bricks[c][r].x 	    = brickX;
+						bricks[c][r].y 	    = brickY;
+						bricks[c][r].width  = brickWidth;
+						bricks[c][r].height = brickHeight;
+						
+						bricks[c][r].dir = Math.floor((Math.random() +0.5) )
+						bricks[c][r].range = Math.floor((Math.random()*brickMovingMaxRange + 4))
+						bricks[c][r].tick = bricks[c][r].dir*bricks[c][r].range;
+						bricks[c][r].status = 1;
+						bricks[c][r].hp 	= brickMaxHp;
+					
+						bricks[c][r].attackX 	    = brickX + brickWidth/2;
+						bricks[c][r].attackY 	    = brickY + brickHeight;
+						bricks[c][r].speed          = Math.random()*5 + 10;
+						
+					}
+				}
+				for(i = 0; i < bulletArray.length; i++)
+				{
+					bulletArray.pop();
+				}
+			}
+			
+			function draw() 
+			{
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+				
+				if(FirstLoad == 0)
+				{	
+					InitialStage();
+					FirstLoad = 1;
+				}
+				
+				drawBricks();
+				drawPaddle();
+				drawbullet();
+				drawattack();
+				drawScore();
+				drawLives();
+				drawstages();
+				
+				keyboardDetection();
+				collisionDetection();
+				victory();
+				
+				timeIncreament();
+				
+				requestAnimationFrame(draw);
+			}
+			draw();
+		</script>
+		<style>
+		div.fixed {
+			position: fixed;
+			top: 20px;
+			left: 550px;
+			width: 300px;
+			color: white;
+			font-size: 20px;
+			//border: 1px solid #73AD21;
+		}
+		</style>
+		<div class="fixed">
+		Pressed "A" to shot Light bullet</br>
+		Pressed "D" to shot Right bullet</br>
+		</div>
+		
+	</body>
+</html>

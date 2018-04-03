@@ -1,0 +1,35 @@
+<html>
+	<body>
+	<head>
+	<style>
+	a {
+	font-size: 20px;
+	}
+	a:link {
+    text-decoration: none;
+	}
+	a:hover {
+	color: red;
+	}
+	</style>
+	</head>
+	<h1>
+	Choose the following one game.
+	</h1>
+	<p>
+	<a href="Game_SpaceInvader.html" >Game_SpaceInvader</a>
+	</p>
+	<p>
+	<a href="Game_Brick.html">Game_Brick</a>
+	</p>
+	<p>
+	<a href="Game_Snake.html">Game_Snake</a>
+	</p>
+	<p>
+	<a href="Game_ColorMatching.html">Game_ColorMatching</a>
+	</p>
+	<p>
+	<a href="Puzzle_BinaryTreeGenerate.html">Puzzle_BinaryTreeGenerate</a>
+	</p>
+	</body>
+</html>

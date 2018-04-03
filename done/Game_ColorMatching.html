@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html>
+
+<body style="background-repeat:no-repeat">
+	<canvas id="myCanvas" width="700" height="500"></canvas>
+	<script>
+		var canvas = document.getElementById("myCanvas");
+
+		var ctx = canvas.getContext("2d");
+
+
+		window.addEventListener("keydown", keyDownHandler, false);
+		window.addEventListener("click", mouseclick);
+
+		var clickx = 0;
+		var clicky = 0;
+		function mouseclick(e) {
+			if (e.clientX > canvas.offsetLeft && e.clientX < canvas.width &&
+				e.clientY > canvas.offsetTop && e.clientY < canvas.height) {
+					clickx = e.clientX - canvas.offsetLeft;
+					clicky =  e.clientY - canvas.offsetTop;
+			}
+		}
+		var rightPressed = false;
+		var leftPressed = true;
+		var upPressed = false;
+		var downPressed = false;
+
+		function keyDownHandler(e) {
+			switch (e.keyCode) {
+				case 37:
+					if (rightPressed)
+						return;
+					rightPressed = false;
+					leftPressed = true;
+					upPressed = false;
+					downPressed = false;
+					break;
+				case 38:
+					if (downPressed)
+						return;
+					rightPressed = false;
+					leftPressed = false;
+					upPressed = true;
+					downPressed = false;
+					break;
+				case 39:
+					if (leftPressed)
+						return;
+					rightPressed = true;
+					leftPressed = false;
+					upPressed = false;
+					downPressed = false;
+					break;
+				case 40:
+					if (upPressed)
+						return;
+					rightPressed = false;
+					leftPressed = false;
+					upPressed = false;
+					downPressed = true;
+					break;
+			}
+		}
+
+		var time = 0;
+		var score = 0;
+		var colormap = new Map();
+
+		colormap.set("yellow", "Y");
+		colormap.set("red",    "R");
+		colormap.set("blue",   "B");
+		colormap.set("green",  "G");
+		colormap.set("purple", "P");
+
+
+		var Circle = function (pos_x, pos_y) {
+			this.x = pos_x;
+			this.y = pos_y;
+			this.r = Math.random() * 5 + 60;
+			this.step = 1;
+			this.text = new innertext(randomcolor());
+			this.boundarycolor = randomcolor();
+			this.duration = 100;
+		};
+
+		var innertext = function (color) {
+			this.color = color;
+			this.string = colormap.get(randomcolor());
+		};
+		var firstcircle = new Circle(100, 100);
+		var secondcircle = new Circle(300, 300);
+		var Circlelist = [];
+		Circlelist.push(firstcircle);
+		Circlelist.push(secondcircle);
+
+		function randomcolor() {
+
+			var residual = Math.floor(((Math.random() + time) * 97)) % 5;
+
+			switch (residual) {
+				case 0:
+					return "yellow";
+				case 1:
+					return "red";
+				case 2:
+					return "blue";
+				case 3:
+					return "green";
+				case 4:
+					return "purple";
+			}
+		}
+
+
+		function colortext(color) {
+			return colormap.get(color);
+		}
+
+
+		function timeIncreament() {
+			time++;
+			if (time >= 999)
+				time = 0;
+		}
+
+
+		function custompos(pos_x, pos_y) {
+			var obj = new Circle(pos_x, pos_y);
+			Circlelist.push(obj);
+		}
+
+		function DRAWALL() {
+			
+			Circleanimate();
+
+			ctx.font = "20px Arial";
+			ctx.textAlign = "center";
+			ctx.fillStyle = "#000000";
+			ctx.fillText("Score: " + score, 200, 500);
+
+			
+		}
+
+		function CreateNewCirce(){
+			var ranx = Math.random() * 500 + 50;
+			var rany = Math.random() * 300 + 50;
+			var obj = new Circle(ranx, rany);
+			Circlelist.push(obj);			
+		}
+		
+		
+
+		function checkhit(clickx, clicky){
+			var increment = 10;
+			for (let i = Circlelist.length - 1; i >= 0; i--) {
+				var current = Circlelist[i];
+				var len = (current.x - clickx)*(current.x - clickx) +
+						  (current.y - clicky)*(current.y - clicky);
+				var inrange = len < current.r * current.r;
+				var boundarystr = colormap.get(current.boundarycolor);
+				if(boundarystr === current.text.string && inrange){
+					score += increment;
+				}
+				else if(boundarystr !== current.text.str && inrange){
+					score -= increment;
+				}
+				if(inrange){
+					Circlelist[i].duration = 0;
+					
+				}
+			}
+		}
+
+		
+		function Circleanimate() {
+			for (let i = Circlelist.length - 1; i >= 0; i--) {
+				var current = Circlelist[i];
+				ctx.beginPath();
+				ctx.arc(current.x, current.y, current.r, 0, Math.PI * 2);
+				ctx.strokeStyle = current.boundarycolor;
+				ctx.lineWidth = 3;
+				ctx.stroke();
+				ctx.closePath();
+
+				ctx.font = "70px Arial";
+				ctx.textAlign = "center";
+				ctx.fillStyle = current.text.color;
+				ctx.fillText(current.text.string, current.x, current.y + 25);
+
+				Circlelist[i].r += Circlelist[i].step;
+				Circlelist[i].duration += (-1);
+				console.log(Circlelist[i].duration);
+				if (Circlelist[i].r > 75) {
+					Circlelist[i].step *= -1;
+				}
+
+				if (Circlelist[i].r < 60 && Circlelist[i].step < 0) {
+					Circlelist[i].step *= -1;
+				}
+				if (Circlelist[i].duration <= 0) {
+					Circlelist.splice(i, 1);
+					CreateNewCirce();
+				}
+			}
+		}
+
+
+		function draw() {
+			ctx.clearRect(0, 0, canvas.width, canvas.height);
+			
+			checkhit(clickx, clicky);
+			DRAWALL();
+			clickx = 0;
+			clicky = 0;
+			timeIncreament();
+
+			requestAnimationFrame(draw);
+		}
+
+		draw();
+	</script>
+	<style>
+		div.fixed {
+			position: fixed;
+			top: 600px;
+			left: 20px;
+			width: 500px;
+			color: Black;
+			font-size: 20px;
+			border: 1px solid purple;
+		}
+	</style>
+	<div class="fixed">
+		Click circle that text (not text color) and boundary color are the same.</br>
+
+
+	</div>
+
+</body>
+
+</html>
