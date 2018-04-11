@@ -1,0 +1,68 @@
+<html>
+
+<body>
+    <input type="file" id="files" name="files[]" multiple />
+
+    <script>
+        var hasreload = false;
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+
+            // Loop through the FileList and render image files as thumbnails.
+
+            for (var i = 0; i < files.length; i++) {
+
+                var f = files[i];
+                // Only process image files.
+                if (!f.type.match('image.*')) {
+                    continue;
+                }
+
+                var reader = new FileReader();
+
+                var span = document.createElement('span');
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    var FileName = theFile.name;
+                    return function (e) {
+                        // Render thumbnail.
+                        //<img class = "thumb" src = "e.target.result" title = "FileName"/>
+                        var titleP = document.createElement('p');
+                        titleP.innerHTML = FileName;
+                        
+                        var mycanvas = document.createElement('canvas');
+                        var ctx = mycanvas.getContext("2d");
+                        var img = new Image();
+
+                        img.onload = function () {
+                            
+                            this.width *= 0.7;
+                            this.height *= 0.7;
+                            
+                            mycanvas.width = this.width;
+                            mycanvas.height = this.height;
+                            
+                            ctx.drawImage(img, 0, 0, this.width, this.height);
+                        }
+
+                        img.src = e.target.result;
+                    
+                        span.appendChild(titleP);
+                        span.appendChild(mycanvas);
+                        
+                        document.body.appendChild(span);
+                        
+                    };
+                })(f);
+
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);
+            }
+        }
+
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+    </script>
+
+</body>
+
+</html>
