@@ -1,0 +1,188 @@
+<html>
+
+<body>
+    <input type="file" id="files" name="files[]"></input>
+    <div style=" margin-top: 20px">
+        <b>Image width : </b>
+        <input type="text" id="image_width" value="1000" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <b>Image height : </b>
+        <input type="text" id="image_height" value="500" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <br/>
+        <div style=" margin-top: 20px">
+            <button type="button" id='gray_avg'>Gray the selected range, average method</button>
+            <button type="button" id='gray_formula'>Gray the selected range, usual formula method</button>
+        </div>
+    </div>
+    <p id='showname'></p>
+    <div>
+        <canvas id="backgroundcanvas" style="position: absolute; left: 100;  z-index: 0" width="1000" height="500"></canvas>
+        <canvas id="foregroundcanvas" style="position: absolute; left: 100;  z-index: 2" width="1000" height="500"></canvas>
+        <canvas id="activate_canvas" style="position: absolute; left: 100;  z-index: 1" width="1000" height="500"></canvas>
+
+    </div>
+    <script>
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+        document.getElementById('gray_avg').addEventListener('click', ToGray, false);
+        document.getElementById('gray_formula').addEventListener('click', ToGray, false);
+        var line_start_x = 0;
+        var line_start_y = 0;
+        var line_end_x = 0;
+        var line_end_y = 0;
+        var rect_width = 0;
+        var rect_height = 0;
+        var haspressed = false;
+
+        var forecanvas = document.getElementById('foregroundcanvas');
+        forecanvas.addEventListener("click", onClick, false);
+        forecanvas.addEventListener("mouseover", onmouseover, false);
+        forecanvas.addEventListener("mousedown", onmousedown, false);
+        forecanvas.addEventListener("mousemove", onmousemove, false);
+        forecanvas.addEventListener("mouseup", onmouseup, false);
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+
+            // Loop through the FileList and render image files as thumbnails.
+
+            for (var i = 0; i < files.length; i++) {
+
+                var f = files[i];
+                // Only process image files.
+                if (!f.type.match('image.*')) {
+                    continue;
+                }
+
+                var reader = new FileReader();
+
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    var FileName = theFile.name;
+                    return function (e) {
+                        // Render thumbnail.
+                        //<img class = "thumb" src = "e.target.result" title = "FileName"/>\
+                        var img = new Image();
+
+                        img.onload = function () {
+
+                            change_canvas_size();
+                            var bgcanvas = document.getElementById('backgroundcanvas');
+                            var bg_ctx = bgcanvas.getContext('2d');
+
+                            this.width = bgcanvas.width;
+                            this.height = bgcanvas.height;
+                            document.getElementById('showname').innerHTML = "Input image name : " + FileName;
+                            bg_ctx.drawImage(img, 0, 0, this.width, this.height);
+                        }
+
+                        img.src = e.target.result;
+                    };
+                })(f);
+
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);
+            }
+        }
+        function onClick(event) {
+
+        }
+        function onmouseover(event) {
+
+        }
+        function onmousedown(e) {
+            line_start_x = e.pageX - this.offsetLeft;
+            line_start_y = e.pageY - this.offsetTop;
+            rect_width = 0;
+            rect_height = 0;
+
+            haspressed = true;
+
+            var activate_ctx = document.getElementById('activate_canvas').getContext('2d');
+            activate_ctx.clearRect(0, 0, this.width, this.height);
+
+        }
+        function onmousemove(event) {
+            if (haspressed) {
+
+                var x = event.pageX - this.offsetLeft;
+                var y = event.pageY - this.offsetTop;
+
+                rect_width = Math.abs(x - line_start_x);
+                rect_height = Math.abs(y - line_start_y);
+                var bg_ctx = this.getContext("2d");
+
+                bg_ctx.clearRect(0, 0, this.width, this.height);
+
+                bg_ctx.strokeRect(line_start_x, line_start_y, rect_width, rect_height);
+
+            }
+        }
+        function onmouseup(e) {
+            line_end_x = e.clientX;
+            line_end_y = e.clientY;
+            haspressed = false;
+
+        }
+        function change_canvas_size() {
+            var fgcanvas = document.getElementById('foregroundcanvas');
+            var bgcanvas = document.getElementById('backgroundcanvas');
+            var activatecanvas = document.getElementById('activate_canvas');
+
+            var labelwidth = document.getElementById('image_width');
+            var labelheight = document.getElementById('image_height');
+            bgcanvas.width = labelwidth.value;
+            bgcanvas.height = labelheight.value;
+
+
+            fgcanvas.width = labelwidth.value;
+            fgcanvas.height = labelheight.value;
+
+            activatecanvas.width = labelwidth.value;
+            activatecanvas.height = labelheight.value;
+        }
+        function ToGray(event) {
+            if (rect_height == 0 || rect_width == 0)
+                return;
+            var type = "avg";
+            if (event.target.id == "gray_avg")
+                type = "avg";
+            else if (event.target.id == 'gray_formula')
+                type = "formula";
+
+            var bgcanvas2d = document.getElementById('backgroundcanvas').getContext('2d');
+            var DataOnCanvas = bgcanvas2d.getImageData(line_start_x, line_start_y, rect_width, rect_height);
+            var DataCreated = bgcanvas2d.createImageData(rect_width, rect_height);
+            Gray(DataOnCanvas, DataCreated, type);
+
+
+            var activatecanvas2d = document.getElementById('activate_canvas').getContext('2d');
+
+            activatecanvas2d.putImageData(DataCreated, line_start_x, line_start_y);
+        }
+        function Gray(DataOnCanvas, DataCreated, type) {
+            for (var i = 0; i < rect_height; i++) {
+                for (var j = 0; j < rect_width; j++) {
+                    var k = (rect_width * i + j) * 4;
+                    var gray = 255;
+                    if (type == "avg")
+                        gray = Avg(DataOnCanvas.data[0], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
+                    else if (type == 'formula')
+                        gray = UsualFormula(DataOnCanvas.data[0], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
+                    DataCreated.data[k] = gray;
+                    DataCreated.data[k + 1] = gray;
+                    DataCreated.data[k + 2] = gray;
+                    DataCreated.data[k + 3] = 255;
+                }
+            }
+        }
+        function Avg(R, G, B) {
+            return (R + G + B) / 3;
+        }
+        function UsualFormula(R, G, B) {
+            return (R * 299 + G * 587 + B * 114 + 500) / 1000;
+        }
+    </script>
+
+</body>
+
+</html>
