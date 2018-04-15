@@ -1,0 +1,146 @@
+<html>
+
+<body>
+    <input type="file" id="files" name="files[]"></input>
+    <div style=" margin-top: 20px">
+        <b>Image width : </b>
+        <input type="text" id="image_width" value="1000" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <b>Image height : </b>
+        <input type="text" id="image_height" value="500" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <br/>
+        <div style=" margin-top: 20px">
+            <button type="button" id='clearbtn'>Clear curves</button>
+        </div>
+    </div>
+    <p id='showname'></p>
+    <div>
+        <canvas id="backgroundcanvas" style="position: absolute; left: 100;  z-index: 0" width="1000" height="500"></canvas>
+        <canvas id="foregroundcanvas" style="position: absolute; left: 100;  z-index: 2" width="1000" height="500"></canvas>        
+    </div>
+    <script>
+        document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+        document.getElementById('clearbtn').addEventListener('click', ClearCurve, false);
+        var line_start_x = 0;
+        var line_start_y = 0;
+        var line_end_x = 0;
+        var line_end_y = 0;
+        var rect_width = 0;
+        var rect_height = 0;
+        var haspressed = false;
+
+        var forecanvas = document.getElementById('foregroundcanvas');
+        forecanvas.addEventListener("click", onClick, false);
+        forecanvas.addEventListener("mouseover", onmouseover, false);
+        forecanvas.addEventListener("mousedown", onmousedown, false);
+        forecanvas.addEventListener("mousemove", onmousemove, false);
+        forecanvas.addEventListener("mouseup", onmouseup, false);
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+
+            // Loop through the FileList and render image files as thumbnails.
+
+            for (var i = 0; i < files.length; i++) {
+
+                var f = files[i];
+                // Only process image files.
+                if (!f.type.match('image.*')) {
+                    continue;
+                }
+
+                var reader = new FileReader();
+
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    var FileName = theFile.name;
+                    return function (e) {
+                        // Render thumbnail.
+                        //<img class = "thumb" src = "e.target.result" title = "FileName"/>\
+                        var img = new Image();
+
+                        img.onload = function () {
+
+                            change_canvas_size();
+                            var bgcanvas = document.getElementById('backgroundcanvas');
+                            var bg_ctx = bgcanvas.getContext('2d');
+
+                            this.width = bgcanvas.width;
+                            this.height = bgcanvas.height;
+                            document.getElementById('showname').innerHTML = "Input image name : " + FileName;
+                            bg_ctx.drawImage(img, 0, 0, this.width, this.height);
+                        }
+
+                        img.src = e.target.result;
+                    };
+                })(f);
+
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);
+            }
+        }
+        function onClick(event) {
+
+        }
+        function onmouseover(event) {
+
+        }
+        function onmousedown(e) {
+            line_start_x = e.pageX - this.offsetLeft;
+            line_start_y = e.pageY - this.offsetTop;
+          
+            haspressed = true;
+        }
+        function onmousemove(event) {
+            if (haspressed) {
+
+                var x = event.pageX - this.offsetLeft;
+                var y = event.pageY - this.offsetTop;
+                
+                var bg_ctx = this.getContext("2d");
+
+                DrawPieceWiseLine(bg_ctx, line_start_x, line_start_y, x, y);
+                line_start_x = x;
+                line_start_y = y;
+            }
+        }
+        function onmouseup(e) {
+            line_end_x = e.clientX;
+            line_end_y = e.clientY;
+            haspressed = false;
+
+        }
+        function change_canvas_size() {
+            var fgcanvas = document.getElementById('foregroundcanvas');
+            var bgcanvas = document.getElementById('backgroundcanvas');
+
+            var labelwidth = document.getElementById('image_width');
+            var labelheight = document.getElementById('image_height');
+            bgcanvas.width = labelwidth.value;
+            bgcanvas.height = labelheight.value;
+
+
+            fgcanvas.width = labelwidth.value;
+            fgcanvas.height = labelheight.value;
+
+        }
+        function DrawPieceWiseLine(ctx, startx, starty, endx, endy) {
+            ctx.beginPath();
+            ctx.moveTo(startx, starty);
+            ctx.lineTo(endx, endy);
+            ctx.stroke();
+        }
+        function ClearCurve(){
+            var Canvas = document.getElementById('foregroundcanvas');
+            var w = Canvas.width;
+            var h = Canvas.height;
+            var ctx = Canvas.getContext('2d');
+            ctx.clearRect(0,0, w, h);
+        }
+
+    </script>
+
+</body>
+
+</html>
