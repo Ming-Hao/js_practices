@@ -1,0 +1,194 @@
+<html>
+
+<body>
+
+    <style type="text/css">
+        .Box {
+            padding: 10px;
+            border: 3px #ccc dashed;
+            float: left;
+            margin: 2;
+        }
+
+        canvas {
+            border: 3px #ccc dashed;
+            margin: 5px;
+            float: left;
+        }
+
+        input {
+            margin-bottom: 10;
+        }
+    </style>
+
+    <script type="text/javascript">
+        var totalbox = 25;
+        var boxwidth = 0;
+        var imgwidth = 0;
+        var imgheight = 0;
+        var currentcanvas = null;
+
+        function AllowDrop(event) {
+            event.preventDefault();
+        }
+
+        function Drag(event) {
+            currentcanvas = this;
+            // reserved but no used
+            // event.dataTransfer.setData("text/html", this.innerHTML);
+        }
+        function Drop(event) {
+            event.preventDefault();
+            if (currentcanvas != this) {
+                var w = this.width;
+                var h = this.height;
+                var nowcanvas2d = this.getContext('2d');
+                var currentcanvas2d = currentcanvas.getContext('2d');
+
+                var currentimagedata = currentcanvas2d.getImageData(0, 0, w, h);
+                var nowdata = nowcanvas2d.getImageData(0, 0, w, h);
+
+                // reserved but no used
+                //currentcanvas.innerHTML = this.innerHTML;
+                //this.innerHTML = event.dataTransfer.getData("text/html");
+
+                currentcanvas2d.clearRect(0, 0, w, h);
+                nowcanvas2d.clearRect(0, 0, w, h);
+                currentcanvas2d.putImageData(nowdata, 0, 0);
+                nowcanvas2d.putImageData(currentimagedata, 0, 0);
+            }
+        }
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+
+            // Loop through the FileList and render image files as thumbnails.
+
+            for (var i = 0; i < files.length; i++) {
+
+                var f = files[i];
+                // Only process image files.
+                if (!f.type.match('image.*')) {
+                    continue;
+                }
+
+                var reader = new FileReader();
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    var FileName = theFile.name;
+                    return function (e) {
+                        // Render thumbnail.
+                        //<img class = "thumb" src = "e.target.result" title = "FileName"/>\
+                        var img = new Image();
+
+                        img.onload = function () {
+                            InputvaluesToNum();
+                            //img.width = imgwidth ;//* Math.sqrt(totalbox);
+                            //img.height = imgheight ;//* Math.sqrt(totalbox);
+                            var canvases = document.getElementsByClassName('drawcanvas');
+                            var canvas_FullPhoto = document.createElement('canvas');
+                            canvas_FullPhoto.width = imgwidth * Math.sqrt(totalbox);
+                            canvas_FullPhoto.height = imgheight * Math.sqrt(totalbox);
+                            var canvas_FullPhoto2d = canvas_FullPhoto.getContext('2d');
+                            canvas_FullPhoto2d.drawImage(img, 0, 0, canvas_FullPhoto.width, canvas_FullPhoto.height);
+                            console.log(`${canvas_FullPhoto.width} ${canvas_FullPhoto.height} `);
+                            //document.body.appendChild(canvas_FullPhoto);
+                            var startx = Number(0);
+                            var starty = Number(0);
+                            for (var i = 0; i < canvases.length; i++) {
+                                var innercanvas = canvases[i];
+                                var canvas2d = innercanvas.getContext('2d');
+                                canvas2d.clearRect(0, 0, 9999, 9999);
+                                innercanvas.addEventListener('drop', Drop);
+                                innercanvas.addEventListener('dragover', AllowDrop);
+
+                                if (Number(i) > 0 && Number(i) % Math.sqrt(totalbox) == 0) {
+                                    starty = Number(starty) + Number(imgheight);
+                                    startx = Number(0);
+                                }
+                                PartImage(canvas_FullPhoto, innercanvas, startx, starty);
+                                startx = Number(startx) + Number(imgwidth);
+                                
+                            }
+                        }
+
+                        img.src = e.target.result;
+                    };
+                })(f);
+
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);
+            }
+        }
+        function PartImage(Fullcanvas, Partcanvas, startx, starty) {
+             
+            var w = Partcanvas.width;
+            var h = Partcanvas.height;
+            var Fullcanvas2d = Fullcanvas.getContext('2d');
+            var Partcanvas2d = Partcanvas.getContext('2d');
+
+            var partdata = Fullcanvas2d.getImageData(startx, starty, w, h);
+
+            Partcanvas2d.putImageData(partdata, 0, 0);
+        }
+
+        function ChildRemove() {
+            var main = document.getElementById('maindiv');
+            while (main.hasChildNodes()) {
+                main.removeChild(main.firstChild);
+            }
+        }
+        function ChildGenerate() {
+            for (var i = 1; i <= totalbox; i++) {
+                AppendNewCanvas();
+            }
+        }
+        function InputvaluesToNum() {
+            ChildRemove();
+            totalbox = document.getElementById("totalboxnum").value;
+            imgwidth = document.getElementById("box_width").value;
+            imgheight = document.getElementById("box_height").value;
+
+            var main = document.getElementById('maindiv');
+            var WIDTH = imgwidth * Math.sqrt(totalbox) + 18 * Math.sqrt(totalbox);
+            main.setAttribute('style', "width:" + String(WIDTH));
+            ChildGenerate();
+        }
+
+        function AddListenerAfterTagsCreated() {
+            InputvaluesToNum();
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+
+        }
+
+        function AppendNewCanvas() {
+            var main = document.getElementById('maindiv');
+            var can = document.createElement('canvas');
+
+            can.setAttribute('width', imgwidth);
+            can.setAttribute('height', imgheight);
+            can.setAttribute('class', "drawcanvas");
+            can.addEventListener('dragstart', Drag);
+            can.setAttribute('draggable', 'true');
+            main.appendChild(can);
+        }
+
+        document.addEventListener("DOMContentLoaded", AddListenerAfterTagsCreated);
+
+    </script>
+
+    <b>Box width : </b>
+    <input type="text" id="box_width" value="150" onkeyup="value=value.replace(/[^\d]/g,'') ">
+    <b>Box height : </b>
+    <input type="text" id="box_height" value="150" onkeyup="value=value.replace(/[^\d]/g,'') ">
+    <b>Total box : </b>
+    <input type="text" id="totalboxnum" value="4" onkeyup="value=value.replace(/[^\d]/g,'') ">
+
+    <br/>
+    <input type="file" id="files" name="files[]"></input>
+    <div id='maindiv' style="width: 700px">
+
+    </div>
+</body>
+
+</html>
