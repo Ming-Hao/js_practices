@@ -40,24 +40,30 @@
         function Drop(event) {
             event.preventDefault();
             if (currentcanvas != this) {
-                var w = this.width;
-                var h = this.height;
-                var nowcanvas2d = this.getContext('2d');
-                var currentcanvas2d = currentcanvas.getContext('2d');
-
-                var currentimagedata = currentcanvas2d.getImageData(0, 0, w, h);
-                var nowdata = nowcanvas2d.getImageData(0, 0, w, h);
-
-                // reserved but no used
-                //currentcanvas.innerHTML = this.innerHTML;
-                //this.innerHTML = event.dataTransfer.getData("text/html");
-
-                currentcanvas2d.clearRect(0, 0, w, h);
-                nowcanvas2d.clearRect(0, 0, w, h);
-                currentcanvas2d.putImageData(nowdata, 0, 0);
-                nowcanvas2d.putImageData(currentimagedata, 0, 0);
+                SwapImageData(this, currentcanvas);
             }
         }
+
+        function SwapImageData(nowcanvas, currentcanvas) {
+            var w = nowcanvas.width;
+            var h = nowcanvas.height;
+            var nowcanvas2d = nowcanvas.getContext('2d');
+            var currentcanvas2d = currentcanvas.getContext('2d');
+
+            var currentimagedata = currentcanvas2d.getImageData(0, 0, w, h);
+            var nowdata = nowcanvas2d.getImageData(0, 0, w, h);
+
+            // reserved but no used
+            //currentcanvas.innerHTML = this.innerHTML;
+            //this.innerHTML = event.dataTransfer.getData("text/html");
+
+            currentcanvas2d.clearRect(0, 0, w, h);
+            nowcanvas2d.clearRect(0, 0, w, h);
+            currentcanvas2d.putImageData(nowdata, 0, 0);
+            nowcanvas2d.putImageData(currentimagedata, 0, 0);
+        }
+
+
         function handleFileSelect(evt) {
             var files = evt.target.files; // FileList object
 
@@ -99,8 +105,7 @@
                                 var innercanvas = canvases[i];
                                 var canvas2d = innercanvas.getContext('2d');
                                 canvas2d.clearRect(0, 0, 9999, 9999);
-                                innercanvas.addEventListener('drop', Drop);
-                                innercanvas.addEventListener('dragover', AllowDrop);
+
 
                                 if (Number(i) > 0 && Number(i) % Math.sqrt(totalbox) == 0) {
                                     starty = Number(starty) + Number(imgheight);
@@ -108,7 +113,7 @@
                                 }
                                 PartImage(canvas_FullPhoto, innercanvas, startx, starty);
                                 startx = Number(startx) + Number(imgwidth);
-                                
+
                             }
                         }
 
@@ -121,7 +126,7 @@
             }
         }
         function PartImage(Fullcanvas, Partcanvas, startx, starty) {
-             
+
             var w = Partcanvas.width;
             var h = Partcanvas.height;
             var Fullcanvas2d = Fullcanvas.getContext('2d');
@@ -145,7 +150,8 @@
         }
         function InputvaluesToNum() {
             ChildRemove();
-            totalbox = document.getElementById("totalboxnum").value;
+            var boxedge = document.getElementById("boxedge").value;
+            totalbox = boxedge * boxedge;
             imgwidth = document.getElementById("box_width").value;
             imgheight = document.getElementById("box_height").value;
 
@@ -170,6 +176,8 @@
             can.setAttribute('class', "drawcanvas");
             can.addEventListener('dragstart', Drag);
             can.setAttribute('draggable', 'true');
+            can.addEventListener('drop', Drop);
+            can.addEventListener('dragover', AllowDrop);
             main.appendChild(can);
         }
 
@@ -181,8 +189,8 @@
     <input type="text" id="box_width" value="150" onkeyup="value=value.replace(/[^\d]/g,'') ">
     <b>Box height : </b>
     <input type="text" id="box_height" value="150" onkeyup="value=value.replace(/[^\d]/g,'') ">
-    <b>Total box : </b>
-    <input type="text" id="totalboxnum" value="4" onkeyup="value=value.replace(/[^\d]/g,'') ">
+    <b>Box edge number : </b>
+    <input type="text" id="boxedge" value="4" onkeyup="value=value.replace(/[^\d]/g,'') ">
 
     <br/>
     <input type="file" id="files" name="files[]"></input>
