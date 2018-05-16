@@ -2,9 +2,8 @@
 <html>
 
 <head>
-
     <body>
-        <canvas id='linecanvas' width="500" height="500"></canvas>
+        <canvas id='linecanvas' width="512" height="512"></canvas>
     </body>
     <script type="text/javascript">
         document.getElementById('linecanvas').addEventListener("mousedown", onmousedown, false);
@@ -19,10 +18,8 @@
         var RealB = [];
         var RealC = [];
         var RealD = [];
-        allpt.push([0, 500]);
-        allpt.push([200, 50]);
-        allpt.push([400, 300]);
-        allpt.push([500, 0]);
+        allpt.push([0, 1]);
+        allpt.push([1, 0]);
         function setCoeffs() {
             
             a = [];
@@ -44,7 +41,7 @@
             for (var i = 1; i < allpt.length - 1; i++) {
                 var tmp1 = (allpt[i + 1][1] - allpt[i][1]) / h[i];
                 var tmp2 = (allpt[i][1] - allpt[i - 1][1]) / h[i - 1];
-                d.push(tmp1 - tmp2);
+                d.push(6*(tmp1 - tmp2));
             }
             d.push(0);
             a.push(0);
@@ -85,36 +82,38 @@
 
 
             for (var i = 0; i < m.length; i++) {
-                RealC.push(m[i] * 2);
+                RealC.push(m[i] / 2);
             }
-            console.log("RealC");
-            console.log(RealC);
+            
 
             for (var i = 0; i < allpt.length - 1; i++) {
                 RealA.push(allpt[i][1]);
             }
-            console.log("RealA");
-            console.log(RealA);
+            
 
-            for (var i = 0; i < m.length - 1; i++) {
-                var tmp = (m[i + 1] - m[i]) / h[i] / 6;
+            for (var i = 0; i < h.length; i++) {
+                var tmp = (m[i + 1] - m[i]) /( h[i]* 6);
                 RealD.push(tmp);
             }
-            console.log("RealD");
-            console.log(RealD);
+            
 
-            for (var i = 0; i < allpt.length - 1; i++) {
-                var tmp = (allpt[i + 1][1] - allpt[i][1]) / h[i] - RealC[i] * h[i] - RealD[i] * h[i] * h[i];
+            for (var i = 0; i < h.length; i++) {
+                var tmp = ((allpt[i + 1][1] - allpt[i][1]) / h[i]) - (RealC[i] * h[i]) - (RealD[i] * h[i] * h[i]);
                 RealB.push(tmp);
             }
-            console.log("RealB");
+            console.log(RealA);
             console.log(RealB);
+            console.log(RealC);
+            console.log(RealD);
+            
         }
 
         function onmousedown(e) {
             line_start_x = e.pageX - this.offsetLeft;
             line_start_y = e.pageY - this.offsetTop;
-            allpt.push([line_start_x, line_start_y]);
+            allpt.push([line_start_x/512, line_start_y/512]);
+            console.log("new");
+            console.log(line_start_x/512);
             sortallpt();
             draw();
         }
@@ -135,15 +134,15 @@
         }
         function draw() {
             var ctx = document.getElementById('linecanvas').getContext('2d');
-            ctx.clearRect(0, 0, 500, 500);
+            ctx.clearRect(0, 0, 512, 512);
             ctx.beginPath();
-            ctx.rect(0, 0, 500, 500);
+            ctx.rect(0, 0, 512, 512);
             ctx.fillStyle = "#000000";
             ctx.fill();
             ctx.closePath();
             for (var i = 0; i < allpt.length; i++) {
                 ctx.beginPath();
-                ctx.arc(allpt[i][0], allpt[i][1], 5, 0, Math.PI * 2);
+                ctx.arc(allpt[i][0]*512, allpt[i][1]*512, 5, 0, Math.PI * 2);
                 ctx.fillStyle = "#00FFFF";
                 ctx.fill();
                 ctx.closePath();
@@ -156,15 +155,16 @@
             DrawPts = [];
             for (var i = 1; i < allpt.length; i++) {
                 var preX = allpt[i - 1][0];
-                for (var j = allpt[i - 1][0]; j <= allpt[i][0]; j ++) {
+                var diff = ( allpt[i][0] -  allpt[i-1][0]) / 100;
+                for (var j = allpt[i - 1][0]; j <= allpt[i][0]; j+=diff) {
                     var X = j - preX;
                     var Y = RealA[i - 1] + RealB[i - 1] * X + RealC[i - 1] * X * X + RealD[i - 1] * X * X * X;
+                    Y = Y*512;
                     if(Y > -5)
                         Y = -5;
-                    else if(Y < -495)
-                        Y = -495;
-                    DrawPts.push([j, -Y]);
-                    console.log([j, -Y]);
+                    else if(Y < -(512-5))
+                        Y = -(512-5);
+                    DrawPts.push([j*512, -Y]);
                 }
             }
             
@@ -172,7 +172,7 @@
                 ctx.beginPath();
                 ctx.moveTo(DrawPts[i - 1][0], DrawPts[i - 1][1]);
                 ctx.lineTo(DrawPts[i][0], DrawPts[i][1]);
-                ctx.lineWidth = 2;
+                ctx.lineWidth = 3;
                 ctx.strokeStyle = "#FF0000";
                 ctx.stroke();
             }
