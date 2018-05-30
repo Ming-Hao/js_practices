@@ -50,6 +50,6 @@ class Permutatoin {
     }
 }
 
-var permutation_generate = new Permutatoin(6);
-permutation_generate.start();
-console.log(permutation_generate.AllResult());
+var combination_generate = new Permutatoin(4);
+combination_generate.start();
+console.log(combination_generate.AllResult());
