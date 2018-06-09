@@ -165,9 +165,9 @@
                     var k = (rect_width * i + j) * 4;
                     var gray = 255;
                     if (type == "avg")
-                        gray = Avg(DataOnCanvas.data[0], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
+                        gray = Avg(DataOnCanvas.data[k], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
                     else if (type == 'formula')
-                        gray = UsualFormula(DataOnCanvas.data[0], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
+                        gray = UsualFormula(DataOnCanvas.data[k], DataOnCanvas.data[k + 1], DataOnCanvas.data[k + 2]);
                     DataCreated.data[k] = gray;
                     DataCreated.data[k + 1] = gray;
                     DataCreated.data[k + 2] = gray;
