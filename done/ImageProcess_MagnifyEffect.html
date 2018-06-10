@@ -1,0 +1,198 @@
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Magnitute Effect</title>
+    <style>
+        canvas {
+            border: 3px #ccc dashed;
+            margin: 5px;
+            float: left;
+        }
+
+        input {
+            margin-bottom: 10;
+        }
+    </style>
+    <script>
+        var imagesrc = "";
+        var originalsize = {
+            w: 0,
+            h: 0
+        }
+        var originalcanvas = {
+            w: 0,
+            h: 0
+        }
+        var focusRect = {
+            w: 100,
+            h: 80
+        }
+        var fiximagedata;
+        var showimage;
+        function resizeGame(e) {
+
+            var newWidth = this.innerWidth;
+            var newHeight = this.innerHeight;
+
+            var fixcan = document.getElementById('fixCanvas');
+            var showcan = document.getElementById('showCanvas');
+            originalcanvas.w = newWidth * 4 / 10;
+            originalcanvas.h = newHeight * 6 / 10;
+
+            fixcan.width = originalcanvas.w
+            fixcan.height = originalcanvas.h;
+            showcan.width = originalcanvas.w
+            showcan.height = originalcanvas.h;
+
+            if (imagesrc !== "") {
+                var img = new Image();
+                img.onload = loadImage;
+                img.src = imagesrc;
+            }
+        }
+
+        function loadImage() {
+            fiximagedata = null;
+            originalsize.w = this.width;
+            originalsize.h = this.height;
+
+            var fixcan = document.getElementById('fixCanvas');
+            var showcan = document.getElementById('showCanvas');
+            var fixcan2d = fixcan.getContext('2d');
+            var showcan2d = showcan.getContext('2d');
+            fixcan.width = Math.min(originalcanvas.w, originalsize.w);
+            fixcan.height = fixcan.width * originalsize.h / originalsize.w;
+            showcan.height = Math.min(originalcanvas.h, originalsize.h);
+            showcan.width = showcan.height * focusRect.w / focusRect.h;
+
+            fixcan2d.clearRect(0, 0, 9999, 9999);
+            showcan2d.clearRect(0, 0, 9999, 9999);
+
+            fixcan2d.drawImage(this, 0, 0, fixcan.width, fixcan.height);
+            showcan2d.drawImage(this, 0, 0, this.width / 2, this.height / 2, 0, 0, showcan.width, showcan.height);
+
+        }
+
+
+        function CopyData(DataOnCanvas, DataCreated) {
+            var canvasdata = DataOnCanvas.getContext('2d').getImageData(0, 0, DataOnCanvas.width, DataOnCanvas.height);
+
+            for (var i = 0; i < DataOnCanvas.height; i++) {
+                for (var j = 0; j < DataOnCanvas.width; j++) {
+                    var k = (DataOnCanvas.width * i + j) * 4;
+
+                    DataCreated.data[k] = canvasdata.data[k];
+                    DataCreated.data[k + 1] = canvasdata.data[k + 1];;
+                    DataCreated.data[k + 2] = canvasdata.data[k + 2];
+                    DataCreated.data[k + 3] = 255;
+                }
+            }
+        }
+
+        function onmousemove(event) {
+            if (imagesrc == "")
+                return;
+            var fixcan = document.getElementById('fixCanvas');
+            var showcan = document.getElementById('showCanvas');
+            var fixcan2d = fixcan.getContext('2d');
+            var showcan2d = showcan.getContext('2d');
+            var fix_boundingbox = fixcan.getBoundingClientRect();
+
+            var boxcenter_x = event.clientX - fix_boundingbox.left - focusRect.w / 2;
+            var boxcenter_y = event.clientY - fix_boundingbox.top - focusRect.h / 2;
+            var RealImgRatio = showimage.width / fixcan.width;
+            var show_start_x = (boxcenter_x) * RealImgRatio;
+            var show_start_y = (boxcenter_y) * RealImgRatio;
+            var show_width = focusRect.w * RealImgRatio;
+            var show_height = focusRect.h * RealImgRatio;
+
+            if (event.clientX > fix_boundingbox.left && event.clientX < fix_boundingbox.right &&
+                event.clientY > fix_boundingbox.top && event.clientY < fix_boundingbox.bottom) {
+
+
+                if (fiximagedata == null) {
+                    var DataOnCanvas = fixcan2d.getImageData(0, 0, fixcan.width, fixcan.height);
+                    fiximagedata = fixcan2d.createImageData(fixcan.width, fixcan.height);
+                    CopyData(fixcan, fiximagedata);
+                }
+
+                fixcan2d.clearRect(0, 0, 9999, 9999);
+                fixcan2d.putImageData(fiximagedata, 0, 0);
+                fixcan2d.strokeRect(boxcenter_x, boxcenter_y, focusRect.w, focusRect.h);
+
+                showcan2d.clearRect(0, 0, 9999, 9999);
+                showcan2d.drawImage(showimage,
+                    show_start_x, show_start_y, show_width, show_height,
+                    0, 0, showcan.width, showcan.height);
+
+            }
+        }
+
+        function handleFileSelect(evt) {
+            var files = evt.target.files; // FileList object
+            focusRect.w = Number(document.getElementById('rect_w').value);
+            focusRect.h = Number(document.getElementById('rect_h').value);
+           
+            // Loop through the FileList and render image files as thumbnails.
+
+            for (var i = 0; i < files.length; i++) {
+
+                var f = files[i];
+                // Only process image files.
+                if (!f.type.match('image.*')) {
+                    continue;
+                }
+
+                var reader = new FileReader();
+
+                // Closure to capture the file information.
+                reader.onload = (function (theFile) {
+                    var FileName = theFile.name;
+                    return function (e) {
+                        // Render thumbnail.
+                        //<img class = "thumb" src = "e.target.result" title = "FileName"/>\
+                        var img = new Image();
+                        showimage = img;
+                        img.onload = loadImage;
+                        img.src = e.target.result;
+                        imagesrc = img.src;
+                    };
+                })(f);
+
+                // Read in the image file as a data URL.
+                reader.readAsDataURL(f);
+            }
+        }
+
+        function initialdocument() {
+            document.getElementById('files').addEventListener('change', handleFileSelect, false);
+            document.getElementById('fixCanvas').addEventListener("mousemove", onmousemove, false);
+            window.addEventListener('resize', resizeGame, false);
+
+            resizeGame();
+        }
+        document.addEventListener("DOMContentLoaded", initialdocument);
+
+
+    </script>
+
+</head>
+
+<body>
+    <div>
+        <input type="file" id="files" name="files[]"></input>
+    </div>
+    <div>
+        <b>Focus RectSize Width</b>
+        <input type="text" id="rect_w" value="100" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <b>Focus RectSize Height</b>
+        <input type="text" id="rect_h" value="100" onkeyup="value=value.replace(/[^\d]/g,'') ">
+    </div>
+    <div>
+        <canvas id="fixCanvas" width="200" height="200"></canvas>
+        <canvas id="showCanvas" width="200" height="200"></canvas>
+    </div>
+</body>
+
+</html>
