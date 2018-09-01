@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <style>
+        #character-L,
+        #character-R,
+        #character-D,
+        #character-U {
+
+            display: none;
+            width: 64px;
+            height: 64px;
+        }
+
+        .character-left {
+
+            background: url('img/character_walk.png') 0 -64px;
+            animation: run-left 0.8s steps(9) infinite,
+            slide-left 3.2s steps(36) infinite;
+            margin-left: 40%
+        }
+
+        @keyframes run-left {
+            100% {
+                background-position: -576px -64px;
+
+            }
+        }
+
+        @keyframes slide-left {
+            100% {
+                margin-left: -64px;
+            }
+        }
+
+        .character-down {
+            background: url('img/character_walk.png') 0 -128px;
+            animation: run-down 0.8s steps(9) infinite,
+            slide-down 3.2s steps(32) infinite;
+            margin-top: 10%;
+        }
+
+        @keyframes run-down {
+            100% {
+                background-position: -576px -128px;
+
+            }
+
+        }
+
+        @keyframes slide-down {
+            100% {
+                margin-top: 196px;
+
+            }
+        }
+
+
+
+        .character-right {
+
+            background: url('img/character_walk.png') 0 -192px;
+            animation: run-right 0.8s steps(9) infinite,
+            slide-right 3.2s steps(36) infinite;
+            margin-right: 40%;
+        }
+
+        @keyframes run-right {
+            100% {
+                background-position: -576px -192px;
+
+            }
+        }
+
+        @keyframes slide-right {
+            100% {
+                margin-left: 64px;
+            }
+        }
+
+        .character-up {
+
+            background: url('img/character_walk.png') 0 0px;
+            animation: run-up 0.8s steps(9) infinite,
+            slide-up 1.6s steps(18) infinite;
+
+        }
+
+        @keyframes run-up {
+            100% {
+                background-position: -576px 0px;
+
+            }
+        }
+
+        @keyframes slide-up {
+            100% {
+                margin-top: -64px;
+            }
+        }
+    </style>
+    <script>
+        var L_elm;
+        var R_elm;
+        var U_elm;
+        var D_elm;
+        function evaluate_all() {
+            L_elm = document.getElementById("character-L");
+            R_elm = document.getElementById("character-R");
+            U_elm = document.getElementById("character-U");
+            D_elm = document.getElementById("character-D");
+            L_elm.style.display = "none";
+            R_elm.style.display = "none";
+            U_elm.style.display = "none";
+            D_elm.style.display = "none";
+        }
+        function ShowL() {
+            evaluate_all();
+            L_elm.style.display = "block";
+        }
+        function ShowR() {
+            evaluate_all();
+            R_elm.style.display = "block";
+
+        }
+        function ShowU() {
+            evaluate_all();
+            U_elm.style.display = "block";
+        }
+        function ShowD() {
+            evaluate_all();
+            D_elm.style.display = "block";
+        }
+
+    </script>
+</head>
+
+<body>
+    <div>
+        <input type="button" style="margin:10px" value="Show left move" onclick="ShowL()">
+        <br>
+        <input type="button" style="margin:10px" value="Show right move" onclick="ShowR()">
+        <br>
+        <input type="button" style="margin:10px" value="Show down move" onclick="ShowD()">
+        <br>
+        <input type="button" style="margin:10px" value="Show up move" onclick="ShowU()">
+        <br>
+    </div>
+
+    <div style="margin-top: 100px">
+        <div id="character-U" class="character-up"></div>
+    </div>
+    <div>
+        <div id="character-L" class="character-left"></div>
+    </div>
+    <div>
+        <div id="character-D" class="character-down"></div>
+    </div>
+    <div>
+        <div id="character-R" class="character-right"></div>
+    </div>
+
+</body>
+
+</html>
