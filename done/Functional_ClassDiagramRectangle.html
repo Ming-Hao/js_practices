@@ -1,0 +1,202 @@
+<html>
+
+<head>
+    <style>
+        .dashBorder {
+            border: 3px dashed;
+        }
+
+        .standard {
+
+            height: 250px;
+            width: 300px;
+            resize: both;
+            overflow: auto;
+            position: absolute;
+            top: 100px;
+            left: 50px;
+
+        }
+
+        .lowerPart {
+            box-sizing: border-box;
+            text-align: center;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+        }
+
+        img {
+            width: 90%;
+        }
+
+        .draggedTitle {
+
+            text-align: center;
+            background-color: rgb(201, 167, 233);
+            height: 40px;
+        }
+
+        .RIGHT {
+            position: fixed;
+            background-color: green;
+            top: 0px;
+            width: 200px;
+            height: 100%;
+            margin-left: 80%;
+            z-index: -1;
+        }
+
+
+        .TextEnable {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            border: none;
+            background-color: transparent;
+            pointer-events: none;
+
+        }
+
+        .TextDisable {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            border: none;
+            background-color: rgba(255, 255, 255, 0.7);
+            pointer-events: auto;
+        }
+    </style>
+    <script>
+        var currentDragging = null;
+        var Pressed = false;
+        var previousX = 0;
+        var previousY = 0;
+
+        function CreaterRect() {
+            var newDIV = document.createElement("div");
+            newDIV.setAttribute("class", "standard dashBorder");
+            var draggedDiv = document.createElement("div");
+            draggedDiv.setAttribute("class", "draggedTitle");
+            var inputTitle = document.createElement("input");
+            inputTitle.setAttribute("type", "type");
+            inputTitle.setAttribute("class", "TextEnable");
+            inputTitle.setAttribute("value", "TextTitle");
+            draggedDiv.appendChild(inputTitle);
+            newDIV.appendChild(draggedDiv);
+            document.body.appendChild(newDIV);
+            SetMouseDownListener(draggedDiv);
+            SetDoubleClick(draggedDiv);
+        }
+        function SetMouseDownListener(element) {
+            element.addEventListener("mousedown", mousePressed);
+        }
+        function SetDoubleClick(element) {
+            element.addEventListener("dblclick", TextEnable);
+        }
+        function TextEnable(event) {
+            var childInput = event.target.getElementsByClassName("TextEnable")[0];
+
+            childInput.setAttribute("class", "TextDisable");
+        }
+        function mousePressed(e) {
+            // e.preventDefault();
+            currentDragging = e.target.parentNode;
+            previousX = e.clientX;
+            previousY = e.clientY;
+            Pressed = true;
+
+        }
+        function mouseMove(e) {
+            e.preventDefault();
+            if (!Pressed)
+                return;
+
+            currentDragging.style.top = currentDragging.offsetTop + (e.clientY - previousY) + "px";
+            currentDragging.style.left = currentDragging.offsetLeft + (e.clientX - previousX) + "px";
+
+            previousX = e.clientX;
+            previousY = e.clientY;
+
+            checkOtherDiv(e.clientX, e.clientY);
+        }
+        function mouseUp(e) {
+            e.preventDefault();
+            Pressed = false;
+            currentDragging = null;
+        }
+        function Overlapping(mouseX, mouseY, element) {
+            let elementX = -1;
+            let elementY = -1;
+            let elementW = -1;
+            let elementH = -1;
+            elementX = element.offsetLeft;
+            elementY = element.offsetTop;
+
+            if (mouseX < elementX)
+                return false;
+            if (mouseY < elementY)
+                return false;
+
+            elementW = elementX + element.offsetWidth;
+            elementH = elementY + element.offsetHeight;
+
+
+            if (mouseX > elementW)
+                return false;
+            if (mouseY > elementH)
+                return false;
+            return true;
+        }
+        function checkOtherDiv(mouseX, mouseY) {
+
+            var RIGHTS = document.getElementsByClassName("RIGHT");
+
+            for (let i = 0; i < RIGHTS.length; i++) {
+                if (Overlapping(mouseX, mouseY, RIGHTS[i]))
+                    RIGHTS[i].style.background = "yellow";
+                else
+                    RIGHTS[i].style.background = "green";
+            }
+        }
+        function keyDownHandler(e) {
+            e = e || window.event;
+
+            switch (e.keyCode) {
+                case 13:
+                    var all_Inputs = document.getElementsByClassName("TextDisable");
+                    for (let i = 0; i < all_Inputs.length; i++)
+                        all_Inputs[i].setAttribute("class", "TextEnable");
+                    break;
+            }
+        }
+        function init() {
+            var draggedTitleElements = document.getElementsByClassName("draggedTitle");
+            SetMouseDownListener(draggedTitleElements[0]);
+            SetDoubleClick(draggedTitleElements[0]);
+            //draggedTitleElements[0].addEventListener("mousemove", mouseMove);
+            document.addEventListener("mousemove", mouseMove);
+            document.addEventListener("mouseup", mouseUp);
+            window.addEventListener("keydown", keyDownHandler, false);
+        }
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+    <input type="button" value="Add new" onclick="CreaterRect()">
+
+    <div class="standard dashBorder">
+        <div class="draggedTitle">
+            <input type="text" class="TextEnable" value="PikaTitle">
+        </div>
+        <div class="lowerPart">
+            <img class="Pika" src="img/Pikachu.jpg">
+        </div>
+    </div>
+    <div class="RIGHT" id="AA">
+
+    </div>
+</body>
+
+</html>
