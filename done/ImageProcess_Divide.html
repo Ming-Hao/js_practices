@@ -10,6 +10,14 @@
             margin: 2;
         }
 
+        .dragging {
+            opacity: .25;
+        }
+
+        .dragOver {
+            border: 3px red dashed;
+        }
+
         canvas {
             border: 3px #ccc dashed;
             margin: 5px;
@@ -30,10 +38,13 @@
 
         function AllowDrop(event) {
             event.preventDefault();
+            this.classList.add('dragOver');
         }
 
         function Drag(event) {
             currentcanvas = this;
+            this.classList.add('dragging');
+            
             // reserved but no used
             // event.dataTransfer.setData("text/html", this.innerHTML);
         }
@@ -42,6 +53,15 @@
             if (currentcanvas != this) {
                 SwapImageData(this, currentcanvas);
             }
+            this.classList.remove('dragOver');
+        }
+
+        function DragLeave() {
+            this.classList.remove('dragOver');
+        }
+
+        function DragEnd() {
+            this.classList.remove('dragging');
         }
 
         function SwapImageData(nowcanvas, currentcanvas) {
@@ -178,6 +198,8 @@
             can.setAttribute('draggable', 'true');
             can.addEventListener('drop', Drop);
             can.addEventListener('dragover', AllowDrop);
+            can.addEventListener('dragleave', DragLeave);
+            can.addEventListener('dragend', DragEnd);
             main.appendChild(can);
         }
 
