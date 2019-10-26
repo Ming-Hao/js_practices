@@ -1,0 +1,85 @@
+<html>
+
+<head>
+    <style>
+        .roi {
+            width: 50%;
+            height: 250;
+            line-height: 250px; /* need this to vertical center*/
+            text-align: center;
+            background-color: yellow;
+        }
+
+        .menu {
+            width: 100px;
+            height: 200px;
+            background-color: red;
+            display: none;
+            position: absolute;
+        }
+
+        .menuContent {
+            width: 100px;
+            height: 50px;
+            line-height: 50px;
+            text-align: center;
+            background-color: #00D000F0;
+        }
+    </style>
+    <script>
+        var showMenu = false;
+        var mouseX;
+        var mouseY;
+        function slot(e) {
+            var roi = document.getElementsByClassName("roi");
+            roi[0].innerHTML = e.target.innerHTML + " click";
+        }
+        
+        window.addEventListener("click", e => {
+            //when all click is executed, hide menu;
+            var menu = document.getElementById("menuDiv");
+            menu.style.display = "none";
+            
+        });
+        window.addEventListener("contextmenu", e => {
+            mouseX = e.offsetX;
+            mouseY = e.offsetY;
+            var menu = document.getElementById("menuDiv");
+
+            if (e.target.matches('.roi')) {
+                showMenu = true;
+                menu.style.display = "block";
+                menu.style.top = (mouseY + 20) + "px";
+                menu.style.left = (mouseX + 20) + "px";
+            }
+            else {
+                showMenu = false;
+                menu.style.display = "none";
+            }
+            e.preventDefault();
+        });
+
+        window.onload = function() {
+            var menu = document.getElementById("menuDiv");
+            for(let i = 1; i <= 3; i++) {
+                var newDiv = document.createElement('div');
+                newDiv.setAttribute("class", "menuContent");
+                newDiv.innerHTML = "Content " + i;
+                newDiv.addEventListener("click", slot);
+                menu.appendChild(newDiv);
+            }
+        };
+    </script>
+
+</head>
+
+<body>
+    <div id="menuDiv" class="menu">
+
+    </div>
+    <div class="roi">
+        ROI
+    </div>
+</body>
+
+</html>
