@@ -1,0 +1,25 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="isometric_tail.js"></script>
+    <script>
+        var squareSide = 70;
+        var diagonalNum = 6;
+        var boardWidth = 1000;
+        var boardHeight = 700;
+        var leftOffset = "140px";
+        var topOffset = "50px";
+        
+        var board = new DiamondBoard(squareSide, diagonalNum);
+        function init() {
+            board.build(1000, 700, topOffset, leftOffset);
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
