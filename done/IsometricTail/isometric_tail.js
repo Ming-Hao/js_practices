@@ -44,7 +44,7 @@ class DiamondBoard {
                     x: offsetX + this.side * j + (this.side / 2) * leftOffset,
                     y: this.side / 2 * (i + 1),
                     state: "normal",
-                    drawColor: "000000",
+                    drawColor: "#000000",
                 };
 
                 this.drawDiamond(canvas, diamond, this.side, this.side);
