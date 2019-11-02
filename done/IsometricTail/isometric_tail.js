@@ -1,7 +1,8 @@
 class DiamondBoard {
-    constructor(side, diagonalNum) {
+    constructor(width, height, diagonalNum) {
         this.diamonds = [];
-        this.side = side;
+        this.height = width;
+        this.width = height;
         this.diagonalNum = diagonalNum;
         this.bgColormap = new Map();
         this.bgColormap.set("normal", "#D2691E");
@@ -19,11 +20,11 @@ class DiamondBoard {
         canvas.setAttribute('id', "myCanvas");
         canvas.setAttribute('width', String(w));
         canvas.setAttribute('height', String(h));
-        
+
         canvas.setAttribute("style", "position: absolute;" +
-                                     "top:" + topOffset + ";" + 
+                                     "top:" + topOffset + ";" +
                                      "left:" + leftOffset);
-        
+
 
         canvas.addEventListener("mousemove", moveDetect);
         canvas.addEventListener("mousedown", pressDetect);
@@ -34,20 +35,19 @@ class DiamondBoard {
     initDiamonds(canvas) {
         for (var i = 0; i < 2 * this.diagonalNum - 1; i++) {
             this.diamonds.push([]);
-            var offsetX = this.side / 2;
             var leftOffset = (this.diagonalNum - (i + 1));
             if (leftOffset < 0)
                 leftOffset *= (-1);
 
             for (var j = 0; j < this.diagonalNum; j++) {
                 var diamond = {
-                    x: offsetX + this.side * j + (this.side / 2) * leftOffset,
-                    y: this.side / 2 * (i + 1),
+                    x: this.width / 2 + this.width * j + (this.width / 2) * leftOffset,
+                    y: this.height / 2 * (i + 1),
                     state: "normal",
                     drawColor: "#000000",
                 };
 
-                this.drawDiamond(canvas, diamond, this.side, this.side);
+                this.drawDiamond(canvas, diamond, this.width, this.height);
                 this.diamonds[i].push(diamond);
 
                 if (this.diamonds[i].length == this.diagonalNum - leftOffset) {
@@ -62,7 +62,7 @@ class DiamondBoard {
                 if (diamonds[i][j].state == "click")
                     continue;
 
-                this.drawDiamond(canvas, diamonds[i][j], this.side, this.side);
+                this.drawDiamond(canvas, diamonds[i][j], this.width, this.height);
             }
         }
     }
@@ -71,7 +71,7 @@ class DiamondBoard {
         for (var i = 0; i < diamonds.length; ++i) {
             for (var j = 0; j < diamonds[i].length; ++j) {
                 if (diamonds[i][j].state == "click")
-                    this.drawDiamond(canvas, diamonds[i][j], this.side, this.side);;
+                    this.drawDiamond(canvas, diamonds[i][j], this.width, this.height);;
             }
         }
     }
@@ -125,14 +125,17 @@ function moveDetect(e) {
     var clicked = [];
     var i0 = -1;
     var j0 = -1;
+    var minDistance = 1000000;
     for (var i = 0; i < board.diamonds.length; ++i) {
         for (var j = 0; j < board.diamonds[i].length; ++j) {
             var distanceX = x - board.diamonds[i][j].x;
             var distanceY = y - board.diamonds[i][j].y;
             var distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
-            if (distance <= (board.side / 2) - 1) {
+            var distanceValid = distance <= ((board.width / 2) - 1) || distance <= ((board.height / 2) - 1);
+            if (distanceValid && distance <= minDistance) {
                 i0 = i;
                 j0 = j;
+                minDistance = distance;
             }
             if (board.diamonds[i][j].state == "click")
                 continue;
@@ -155,14 +158,17 @@ function pressDetect(e) {
     var i0 = -1;
     var j0 = -1;
     var clickCount = 0;
+    var minDistance = 1000000;
     for (var i = 0; i < board.diamonds.length; ++i) {
         for (var j = 0; j < board.diamonds[i].length; ++j) {
             var distanceX = x - board.diamonds[i][j].x;
             var distanceY = y - board.diamonds[i][j].y;
             var distance = Math.sqrt(distanceX * distanceX + distanceY * distanceY)
-            if (distance <= (board.side / 2) - 1) {
+            var distanceValid = distance <= ((board.width / 2) - 1) || distance <= ((board.height / 2) - 1);
+            if (distanceValid && distance <= minDistance) {
                 i0 = i;
                 j0 = j;
+                minDistance = distance;
             }
             if (board.diamonds[i][j].state == "click")
                 clickCount++;
@@ -181,5 +187,5 @@ function pressDetect(e) {
         board.diamonds[i0][j0].state = "click";
         board.diamonds[i0][j0].drawColor = nextColor;
     }
-    board.drawDiamond(canvas, board.diamonds[i0][j0], board.side, board.side);
+    board.drawDiamond(canvas, board.diamonds[i0][j0], board.width, board.height);
 }
