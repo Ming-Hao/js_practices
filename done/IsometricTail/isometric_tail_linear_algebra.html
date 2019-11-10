@@ -1,0 +1,26 @@
+<html>
+
+<head>
+    <script type="text/javascript" src="isometric_tail_linear_algebra.js"></script>
+    <script>
+        var rectW = 140;
+        var rectH = 70;
+        var diagonalNum = 7;
+        var boardWidth = 1000;
+        var boardHeight = 700;
+        var leftOffset = "70px";
+        var topOffset = "50px";
+        
+        var board = new DiamondBoard(rectW, rectH, diagonalNum);
+        function init() {
+            board.build(1000, 700, topOffset, leftOffset);
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
