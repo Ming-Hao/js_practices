@@ -44,6 +44,7 @@ class DiamondBoard {
                 this.diamonds[i].push(diamond);
             }
         }
+
         for(var i = 0; i < this.diamonds.length; i++) {
             for(var j = 0; j < this.diamonds[i].length; j++) {
                 this.drawDiamond(canvas, this.diamonds[i][j]);
@@ -108,26 +109,6 @@ class DiamondBoard {
         ctx.closePath();
     }
 
-    drawAllHoverNormalDiamonds(canvas, diamonds) {
-        for (var i = 0; i < diamonds.length; ++i) {
-            for (var j = 0; j < diamonds[i].length; ++j) {
-                if (diamonds[i][j].state == "click")
-                    continue;
-
-                this.drawDiamond(canvas, diamonds[i][j]);
-            }
-        }
-    }
-
-    drawAllClickDiamonds(canvas, diamonds) {
-        for (var i = 0; i < diamonds.length; ++i) {
-            for (var j = 0; j < diamonds[i].length; ++j) {
-                if (diamonds[i][j].state == "click")
-                    this.drawDiamond(canvas, diamonds[i][j]);;
-            }
-        }
-    }
-
     drawDiamondContent(canvas, diamond) {
         var ctx = canvas.getContext("2d");
         var offsetX = this.diagonalNum * this.width / 2;
@@ -177,11 +158,12 @@ function moveDetect(e) {
 
                 if(i0 != last_i0 || j0 != last_j0)
                     if(last_i0 != -1 && last_j0 != -1)
-                        if(board.diamonds[last_i0][last_j0].state == "hover")
+                        if(board.diamonds[last_i0][last_j0].state == "hover") {
                             board.diamonds[last_i0][last_j0].state = "normal";
-            
-                board.drawAllHoverNormalDiamonds(canvas, board.diamonds);
-                board.drawAllClickDiamonds(canvas, board.diamonds);
+                            board.drawDiamond(canvas, board.diamonds[last_i0][last_j0]);
+                        }
+                        
+                board.drawDiamond(canvas, board.diamonds[i0][j0]);
                 
                 last_i0 = i0;
                 last_j0 = j0;
@@ -192,10 +174,10 @@ function moveDetect(e) {
 
 function pressDetect(e) {
     var canvas = document.getElementById("myCanvas");
-    var x = e.pageX - canvas.offsetLeft;
-    var y = e.pageY - canvas.offsetTop;
+    var mx = e.pageX - canvas.offsetLeft;
+    var my = e.pageY - canvas.offsetTop;
 
-    var coord = board.getCoord(x,y);
+    var coord = board.getCoord(mx, my);
     var i0 = coord.i;
     var j0 = coord.j;
 
