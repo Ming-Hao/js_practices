@@ -23,11 +23,11 @@ class DiamondBoard {
 
         canvas.setAttribute("style", "position: absolute;" +
                                                 "top:" + topOffset + ";" +
-                                                "left:" + leftOffset);
+                                                "left:" + leftOffset + ";" +
+                                                "z-index: 0");
 
         canvas.addEventListener("mousemove", moveDetect);
         canvas.addEventListener("mousedown", pressDetect);
-
         this.initDiamonds(canvas);
     }
 
@@ -115,11 +115,22 @@ class DiamondBoard {
         var pt0 = this.getDiamondCoord(diamond.x, diamond.y);
         var pt2 = this.getDiamondCoord(diamond.x + 1, diamond.y + 1);
         
+        ctx.save();
         ctx.beginPath();
-        ctx.arc((pt0.i + pt2.i) / 2 + offsetX, (pt0.j + pt2.j) / 2, this.height / 4, 0, Math.PI * 2);
+        ctx.translate((pt0.i + pt2.i) / 2 + offsetX, (pt0.j + pt2.j) / 2);
+        if(this.height > this.width) {
+            ctx.scale(this.width / this.height, 1);
+            ctx.arc(0, 0, this.width / 3, 0, Math.PI * 2);
+        }
+        else {
+            ctx.scale(1, this.height / this.width);
+            ctx.arc(0, 0, this.height / 3, 0, Math.PI * 2);
+        }
+        
         ctx.fillStyle = diamond.drawColor;
         ctx.fill();
         ctx.closePath();
+        ctx.restore();
     }
 
     getCoord(x, y) {
