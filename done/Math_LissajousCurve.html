@@ -1,0 +1,126 @@
+<html>
+<body>
+    <p>
+        Canvas size :
+        <input type="text" id="size" value="500" onkeyup="value=value.replace(/[^\d]/g,'') ">
+        <button onclick="init()"> create </button>
+    </p>
+    <p>
+        x(theta) : cos(p * theta), →  p is increasing, q is fixed  
+    </p>
+    <p>
+        y(theta) : sin(q * theta), ↓  q is increasing, p is fixed  
+    </p>
+    <canvas id="myCanvas"></canvas>
+</body>
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 500;
+        var box_side = 100;
+        var theta = 0;
+
+        var circle_radius = box_side / 2 - 15;
+
+        var num = Math.floor(canvas_side / box_side);
+
+        function init() {
+            var canvas = document.getElementById("myCanvas");
+            var input_tag = document.getElementById("size");
+
+            canvas.setAttribute('width', String(input_tag.value));
+            canvas.setAttribute('height', String(input_tag.value));
+
+            var ctx = canvas.getContext("2d");
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            canvas_side = input_tag.value;
+            num = Math.floor(canvas_side / box_side);
+
+            resetCurves();
+        }
+
+        function resetCurves() {
+            theta = 0;
+            for (var i = 0; i < num; i++) {
+                for (var j = 0; j < num; j++) {
+                    drawBorder(box_side * i,
+                               box_side * j);
+                }
+            }
+            while (theta < 360) {
+                for (var i = 0; i < num; i++) {
+                    for (var j = 0; j < num; j++) {
+                        drawLissajous(box_side / 2 + box_side * i,
+                                      box_side / 2 + box_side * j,
+                                      1 + i,
+                                      1 + j);
+
+                    }
+                }
+                theta = (theta + 1);
+            }
+            theta = 1
+        }
+
+        function GetRadianDegree(degree) {
+            return degree * 3.14159 / 180;
+        }
+
+        function draw() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            if (theta == 0) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                resetCurves();
+            }
+
+            for (var i = 0; i < num; i++) {
+                for (var j = 0; j < num; j++) {
+                    drawLissajous(box_side / 2 + box_side * i,
+                                  box_side / 2 + box_side * j, 
+                                  1 + i,
+                                  1 + j,
+                                  "#000000");
+
+                }
+            }
+
+            theta = (theta + 1) % 360;
+            requestAnimationFrame(draw);
+        }
+
+        function drawBorder(offset_x, offset_y, color = "#000000") {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.rect(offset_x, offset_y, box_side, box_side);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        function drawLissajous(offset_x, offset_y, param_x = 1, param_y = 1, ball_color = "#00FFFF") {
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            ctx.beginPath();
+            ctx.arc(offset_x + circle_radius * Math.cos(param_x * GetRadianDegree(theta)),
+                    offset_y + circle_radius * Math.sin(param_y * GetRadianDegree(theta)), 2, 0, Math.PI * 2);
+            ctx.fillStyle = ball_color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+
+        draw();
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
