@@ -1,0 +1,97 @@
+<html>
+<body>
+    <p>
+        Degree
+        <input type="range" id = "slider" min="0" max="360" value = "60" oninput="updateSlider()">
+        <input type="text" id = "show">
+    </p>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 500;
+        var w = 300;
+        var h = 100;
+        var theta = 60;
+
+        function updateSlider() {
+            var slider = document.getElementById("slider");
+            var show = document.getElementById("show");
+            show.value = slider.value;
+
+            if(h>w)            
+                resetRect(90-slider.value);
+            else
+                resetRect(-slider.value);
+        }
+
+        function init() {
+            var slider = document.getElementById("slider");
+            var show = document.getElementById("show");
+            show.value = slider.value;
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            if(h>w)            
+                resetRect(90-slider.value);
+            else
+                resetRect(-slider.value);
+        }
+
+        function resetRect(val) {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            ctx.clearRect(0,0, canvas.width, canvas.height);
+                      
+            theta = val;
+            drawBoundingBox(500,500);
+            drawRotatedRect(w,h);
+            var cos_t = Math.cos(GetRadianDegree(theta));
+            var sin_t = Math.sin(GetRadianDegree(theta));
+            drawBoundingBox(w*Math.abs(cos_t) + h * Math.abs(sin_t),
+                            w*Math.abs(sin_t) + h * Math.abs(cos_t));
+        }
+
+        function GetRadianDegree(degree) {
+            return degree * 3.14159 / 180;
+        }
+
+        function drawBoundingBox(w, h, color = "#000000") {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.beginPath();
+            ctx.rect(-w/2, -h/2, w, h);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            ctx.closePath();
+            ctx.translate(-canvas.width / 2, -canvas.height / 2);
+        }
+
+        function drawRotatedRect(w, h, color = "#ff0000") {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            ctx.save();
+            ctx.translate(canvas.width / 2, canvas.height / 2);
+            ctx.rotate(GetRadianDegree(theta));
+            ctx.beginPath();
+            ctx.rect(-w/2, -h/2, w, h);
+            ctx.strokeStyle = color;
+            ctx.stroke();
+            ctx.closePath();
+            ctx.restore();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
