@@ -1,0 +1,63 @@
+<html>
+
+<body>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 1000;
+        function init() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawTriangle(canvas, 400, 10, 600);
+        }
+
+        function drawTriangle(canvas, start_x, start_y, height) {
+            if(height < 10)
+                return;
+            
+            var height_2 = height / 2;
+            var start_x2 = start_x - height_2 / 2;
+            var start_y2 = start_y + height_2;
+            
+            var start_x3 = start_x + height_2 / 2;
+            var start_y3 = start_y + height_2;
+
+            paintTriangle(canvas, start_x, start_y, height, "#ffffff");
+            
+            paintTriangle(canvas, start_x,  start_y,  height_2, "#000000");
+            paintTriangle(canvas, start_x2, start_y2, height_2, "#000000");
+            paintTriangle(canvas, start_x3, start_y3, height_2, "#000000");
+
+            drawTriangle(canvas, start_x,  start_y,  height_2);
+            drawTriangle(canvas, start_x2, start_y2, height_2);
+            drawTriangle(canvas, start_x3, start_y3, height_2);
+        }
+
+        function paintTriangle(canvas, start_x, start_y, height, color) {
+            var ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            ctx.fillStyle = color;
+            ctx.moveTo(start_x, start_y);
+            ctx.lineTo(start_x - height / 2, start_y + height);
+            ctx.lineTo(start_x + height / 2, start_y + height);
+            ctx.lineTo(start_x, start_y);
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>

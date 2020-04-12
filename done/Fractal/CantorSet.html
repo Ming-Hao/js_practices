@@ -1,0 +1,68 @@
+<html>
+
+<body>
+    <input type="checkbox" id="chkbox" onclick="changeSplit()">
+    <label for="chkbox"> Split every step</label><br>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 1000;
+        var is_split = false;
+        function init() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawLine(canvas, 10, 900, 30, 50);
+        }
+
+        function drawLine(canvas, start_x, end_x, start_y, height) {
+            var len = (end_x - start_x) / 3;
+            if(len < 1)
+                return;
+            
+            var start_x1 = start_x;
+            var end_x1   = start_x + len;
+            var start_x2 = start_x + 2*len;
+            var end_x2   = end_x;
+
+            var ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            ctx.fillStyle = "#000000";
+            ctx.fillRect(start_x, start_y, end_x - start_x, height);
+            ctx.closePath();
+
+            ctx.beginPath();
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(end_x1, start_y, start_x2 - end_x1, height);
+            ctx.closePath();
+            
+            if(is_split) {
+                drawLine(canvas, start_x1, end_x1, start_y+height+5, height);
+                drawLine(canvas, start_x2, end_x2, start_y+height+5, height);
+            }
+            else {
+                drawLine(canvas, start_x1, end_x1, start_y, height);
+                drawLine(canvas, start_x2, end_x2, start_y, height);
+            }
+        }
+
+        function changeSplit() {
+            is_split = !is_split;
+            init();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
