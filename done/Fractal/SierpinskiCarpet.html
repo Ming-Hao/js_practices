@@ -1,0 +1,69 @@
+<html>
+
+<body>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 1000;
+        function init() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawCarpet(canvas, 10, 10, 729);
+        }
+
+        function drawCarpet(canvas, start_x, start_y, size) {
+            if(size < 3)
+                return;
+            
+            var new_size = size / 3;
+            var start_x2 = start_x + new_size;
+            var start_y2 = start_y + new_size;
+            var start_x3 = start_x2 + new_size;
+            var start_y3 = start_y2 + new_size;
+            
+            paintCarpet(canvas, start_x, start_y, size, "#000000");
+            
+            paintCarpet(canvas, start_x,  start_y,  new_size, "#ffffff");
+            paintCarpet(canvas, start_x2, start_y,  new_size, "#ffffff");
+            paintCarpet(canvas, start_x3, start_y,  new_size, "#ffffff");
+            paintCarpet(canvas, start_x,  start_y2, new_size, "#ffffff");
+            paintCarpet(canvas, start_x3, start_y2, new_size, "#ffffff");
+            paintCarpet(canvas, start_x,  start_y3, new_size, "#ffffff");
+            paintCarpet(canvas, start_x2, start_y3, new_size, "#ffffff");
+            paintCarpet(canvas, start_x3, start_y3, new_size, "#ffffff");
+
+            drawCarpet(canvas, start_x,  start_y,  new_size);
+            drawCarpet(canvas, start_x2, start_y,  new_size);
+            drawCarpet(canvas, start_x3, start_y,  new_size);
+            drawCarpet(canvas, start_x,  start_y2, new_size);
+            drawCarpet(canvas, start_x3, start_y2, new_size);
+            drawCarpet(canvas, start_x,  start_y3, new_size);
+            drawCarpet(canvas, start_x2, start_y3, new_size);
+            drawCarpet(canvas, start_x3, start_y3, new_size);
+        }
+
+        function paintCarpet(canvas, start_x, start_y, size, color) {
+            var ctx = canvas.getContext("2d");
+            ctx.beginPath();
+            ctx.rect(start_x, start_y, size, size);
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.closePath();
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
