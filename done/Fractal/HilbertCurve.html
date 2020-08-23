@@ -1,0 +1,248 @@
+<html>
+
+<body>
+    <p>
+        <label for="spinbox">
+            Order :
+            <input type="number" id="spinbox" min="1" max="7" value="1" onchange="updateOrder()">
+        </label>
+        <br />
+        <br />
+        Mode
+        <label for="chk4line">
+            <input type="radio" id="chk4line" name="mode" checked=true onclick="updateMode()" />
+            Line
+        </label>
+        <label for="chk4color">
+            <input type="radio" id="chk4color" name="mode" onclick="updateMode()" />
+            Block Color
+        </label>
+        <br />
+        <br />
+        Animation
+        <input type="checkbox" id="chkbx4animate" onclick="updateAnimation()">
+    </p>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 512;
+        var order = 8;
+        var N = Math.pow(2, order);
+        var total = N * N;
+        var points = [];
+        var max_point = total;
+        var mode_color = false;
+        var is_animate = false;
+        var last_time;
+        var current_time;
+        var time_cost;
+
+        function init() {
+            var spinbox = document.getElementById("spinbox");
+            order = spinbox.value;
+            N = Math.pow(2, order);
+            total = N * N;
+            max_point = total;
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            var radio_btn_color = document.getElementById("chk4color");
+
+            mode_color = radio_btn_color.checked;
+            if (mode_color) {
+                ctx.lineWidth += 2;
+                ctx.lineCap = "round";
+            }
+
+            var chkbx4animate = document.getElementById("chkbx4animate");
+            is_animate = chkbx4animate.checked;
+
+            current_time = new Date().getTime();
+            last_time = current_time;
+            time_cost = 0;
+
+            mainDraw();
+        }
+
+        function Map360(i, range_max) {
+            return Math.floor(i * 360 / range_max);
+        }
+
+        function updateOrder() {
+            init();
+        }
+
+        function updateMode() {
+            init();
+        }
+
+        function updateAnimation() {
+            init();
+            if (is_animate)
+                animate();
+        }
+
+        function GetHilbertCurvePoint(index) {
+            var p0 = {
+                x: 0,
+                y: 0
+            };
+
+            var p1 = {
+                x: 0,
+                y: 1
+            };
+
+            var p2 = {
+                x: 1,
+                y: 1
+            };
+
+            var p3 = {
+                x: 1,
+                y: 0
+            };
+
+            var pts = [p0, p1, p2, p3];
+            var index_mod3 = index & 3;
+            var target_pt = pts[index_mod3];
+
+            var index_shift2 = index;
+
+            for (var j = 1; j < order; j++) {
+                index_shift2 = index_shift2 >> 2;
+                index_mod3 = index_shift2 & 3;
+
+                var sub_square_len = Math.pow(2, j);
+
+                if (index_mod3 == 0) {
+                    /* 
+                     *  1    4       1 -- 2
+                     *  |    |  ==>       |
+                     *  2 -- 3       4 -- 3
+                     *  
+                     *  do transpose
+                    */
+
+                    var tmp = target_pt.x;
+                    target_pt.x = target_pt.y;
+                    target_pt.y = tmp;
+                }
+                else if (index_mod3 == 1) {
+                    target_pt.y += sub_square_len;
+                }
+                else if (index_mod3 == 2) {
+                    target_pt.x += sub_square_len;
+                    target_pt.y += sub_square_len;
+                }
+                else if (index_mod3 == 3) {
+                    /* 
+                     *  1    4       3 -- 4
+                     *  |    |  ==>  |
+                     *  2 -- 3       2 -- 1
+                     * 
+                     *  1    4       4 -- 1       3 -- 2       3 -- 4
+                     *  |    |  ==>  |       ==>  |       ==>  | 
+                     *  2 -- 3       3 -- 2       4 -- 1       2 -- 1
+                     *          
+                     *  Y-axis mirror 
+                     *  X-axis mirror 
+                     *  transpose
+                    */
+                    target_pt.x = (sub_square_len - 1) - target_pt.x; // Y-axis mirror
+                    target_pt.y = (sub_square_len - 1) - target_pt.y; // X-axis mirror
+
+                    var tmp = target_pt.x;
+                    target_pt.x = target_pt.y;
+                    target_pt.y = tmp;
+
+                    target_pt.x += sub_square_len;
+                }
+            }
+
+            return target_pt;
+        }
+
+        function animate() {
+            mainDraw();
+
+            if (!is_animate)
+                return;
+
+            last_time = current_time;
+            current_time = new Date().getTime();
+            time_cost += (current_time - last_time);
+            
+            if (order <= 4) {
+                if (time_cost < 160) {
+                    ;
+                }
+                else {
+                    time_cost = 0;
+                    update_maxpoint();
+                }
+            }
+            else {
+                update_maxpoint();
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        function update_maxpoint() {
+            if (max_point == total) {
+                max_point = 0;
+            }
+            else {
+                max_point++;
+            }
+        }
+        function mainDraw() {
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+
+            var unit_len = canvas_side / N;
+
+            points = [];
+
+            for (var i = 0; i < max_point; i++) {
+                var current_pts = GetHilbertCurvePoint(i);
+
+                current_pts.x *= unit_len;
+                current_pts.y *= unit_len;
+
+                points.push(current_pts);
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.translate(unit_len / 2, unit_len / 2);
+
+            for (var i = 1; i < points.length; i++) {
+                ctx.beginPath();
+                ctx.moveTo(points[i - 1].x, points[i - 1].y);
+                if (mode_color) {
+                    ctx.strokeStyle = `hsl(${Map360(i, total)}, 100%, 50%)`;
+                }
+                ctx.lineTo(points[i].x, points[i].y);
+                ctx.stroke();
+                ctx.closePath();
+            }
+
+            ctx.translate(-unit_len / 2, -unit_len / 2);
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+
+<body>
+</body>
+
+</html>
