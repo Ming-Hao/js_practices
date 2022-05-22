@@ -1,0 +1,98 @@
+<html>
+<body>
+    <p>
+        Left angle
+        <input type="range" id="sliderL" min="5" max="30" value="20" oninput="updateSlider()">
+        <input type="text" id="showL">
+    </p>
+    <p>
+        Right angle
+        <input type="range" id="sliderR" min="5" max="30" value="20" oninput="updateSlider()">
+        <input type="text" id="showR">
+    </p>
+    <canvas id="myCanvas" width="500" height="500"></canvas>
+</body>
+
+<head>
+    <script type="text/javascript"></script>
+    <script>
+        var canvas_side = 1000;
+        var is_split = false;
+
+        function updateSlider() {
+            var sliderL = document.getElementById("sliderL");
+            var showL = document.getElementById("showL");
+            showL.value = sliderL.value;
+
+            var showR = document.getElementById("showR");
+            showR.value = sliderR.value;
+
+            init();
+        }
+
+        function init() {
+            var sliderL = document.getElementById("sliderL");
+            var showL = document.getElementById("showL");
+            showL.value = sliderL.value;
+
+            var sliderR = document.getElementById("sliderR");
+            var showR = document.getElementById("showR");
+            showR.value = sliderR.value;
+
+
+            var canvas = document.getElementById("myCanvas");
+            var ctx = canvas.getContext("2d");
+            canvas.setAttribute('width', String(canvas_side));
+            canvas.setAttribute('height', String(canvas_side));
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            var centerX = canvas_side / 2;
+            var centerY = canvas_side / 2;
+            var length = canvas_side / 2;
+
+            ctx.translate(centerX, centerY);
+            ctx.beginPath();
+            ctx.moveTo(0, 300);
+            ctx.lineTo(0, centerY);
+            ctx.stroke();
+
+            DrawLine(canvas, 0, 300, length * 0.6, sliderL.value, sliderR.value);
+ 
+        }
+        function GetRadianDegree(degree) {
+            return degree * Math.PI / 180;
+        }
+
+        function DrawLine(canvas, originX, originY, length, angleL, angleR) {
+            if (Math.abs(length) < 5)
+                return;
+
+            var ctx = canvas.getContext("2d");
+       
+            ctx.translate(originX, originY);
+
+            ctx.save();
+            ctx.rotate(GetRadianDegree(angleR));
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, 0 - length);
+            ctx.stroke();
+            DrawLine(canvas, 0, 0 - length, length * 0.67, angleL, angleR);
+            ctx.restore();
+
+            ctx.save();
+            ctx.rotate(GetRadianDegree(-angleL));
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(0, 0 - length);
+            ctx.stroke();
+
+            DrawLine(canvas, 0, 0 - length, length * 0.67, angleL, angleR);
+            ctx.restore();
+            
+        }
+
+        document.addEventListener("DOMContentLoaded", init);
+    </script>
+</head>
+</html>
