@@ -1,0 +1,97 @@
+<html>
+	<body>
+		<canvas id="myCanvas" width="500" height="800"></canvas>
+		<script>
+            var canvas = document.getElementById("myCanvas");
+			var ctx = canvas.getContext("2d");
+            var groundY = canvas.height-30;
+
+            class Ball {
+                constructor(x, y) {
+                    this.x = x;
+                    this.y = y;
+                    this.velocity = 0;
+                    this.radius =  Math.random() * (20 - 5) + 5;
+                    this.gravity = 0.6 - 1.0  / (this.radius);
+                    this.isMovingUp = false;
+                    this.isMovingDown = false;
+                }
+                velocityDown() {
+                    this.y = this.y - this.velocity;
+                    this.velocity = this.velocity - this.gravity;
+                    if (this.velocity <= 0) {
+                        this.isMovingUp = false;
+                        this.isMovingDown = true;
+                    }
+                }
+                velocityUp() {
+                    this.y = this.y + this.velocity;
+                    this.velocity = this.velocity + this.gravity;
+                    if (this.y >= groundY) {
+                        this.y = groundY;
+                        this.isMovingDown = false;
+                    }
+                }
+                startBounce() {
+                    this.velocity = Math.random() * (20 - 10) + 10;
+                    this.isMovingUp = true;
+                }
+            }
+
+            var ballList = [];
+            
+            window.addEventListener("keydown", keyDownHandler);
+			
+			//document.addEventListener("mousemove", mouseMoveHandler, false);
+
+			function keyDownHandler(e)  {
+				if(e.keyCode == 32) {
+                    for (let ball of ballList) {
+                        if (!ball.isMovingUp && !ball.isMovingDown) {
+                            ball.startBounce();
+                        }
+                    }
+				}
+			}
+            function init() {
+                ballList = [
+                    new Ball(60, groundY),
+                    new Ball(60 * 2, groundY),
+                    new Ball(60 * 3, groundY),
+                    new Ball(60 * 4, groundY),
+                    new Ball(60 * 5, groundY),
+                    new Ball(60 * 6, groundY),
+                    new Ball(60 * 7, groundY)
+                ];
+            }
+            function drawBall(ball)  {
+                ctx.beginPath();
+                ctx.arc(ball.x, ball.y - ball.radius, ball.radius, 0, Math.PI*2);
+                ctx.fillStyle = "#000000";
+                ctx.fill();
+                ctx.closePath();
+            }
+            function updateBall(ball) {
+                if (!ball.isMovingUp && !ball.isMovingDown) {
+                    return;        
+                }
+                if (ball.isMovingUp) {
+                    ball.velocityDown();
+                }
+                if (ball.isMovingDown) {
+                    ball.velocityUp();
+                }
+            }
+            function draw() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                for (let ball of ballList) {
+                    updateBall(ball);
+                    drawBall(ball);
+                }
+                requestAnimationFrame(draw);
+            }
+            init();
+            draw();
+        </script>
+    </body>
+</html>
