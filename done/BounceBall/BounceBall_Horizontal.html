@@ -1,12 +1,13 @@
 <html>
 	<body>
-		<canvas id="myCanvas" width="500" height="800"></canvas>
+		<canvas id="myCanvas" width="400" height="800"></canvas>
         <script src="Ball.js"></script>
 		<script>
             var canvas = document.getElementById("myCanvas");
 			var ctx = canvas.getContext("2d");
             var groundY = canvas.height-30;
             
+            var angle = 60;
             var gravity = -0.5;
             var ballList = [];
             
@@ -15,20 +16,16 @@
 			function keyDownHandler(e)  {
 				if(e.keyCode == 32) {
                     for (let ball of ballList) {
-                        let velocity = Math.random() * (20 - 10) + 10;
-                        ball.startBounce(gravity, 0, velocity);
+                        let velocity = Math.random() * (30 - 10) + 10;
+                        let velocityX = velocity * Math.cos(Math.PI * angle / 180.0); 
+                        let velocityY = velocity * Math.sin(Math.PI * angle / 180.0); 
+                        ball.startBounce(gravity, velocityX, velocityY);
                     }
 				}
 			}
             function init() {
                 ballList = [
-                    new Ball(60, groundY),
-                    new Ball(60 * 2, groundY),
-                    new Ball(60 * 3, groundY),
-                    new Ball(60 * 4, groundY),
-                    new Ball(60 * 5, groundY),
-                    new Ball(60 * 6, groundY),
-                    new Ball(60 * 7, groundY)
+                    new Ball(200, groundY)
                 ];
             }
             function drawBall(ball)  {
@@ -39,7 +36,7 @@
                 ctx.closePath();
             }
             function updateBall(ball) {
-                ball.updateVelocity(gravity, groundY);
+                ball.updateVelocity(gravity, groundY, ball.radius, 400 - ball.radius);
             }
             function draw() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
